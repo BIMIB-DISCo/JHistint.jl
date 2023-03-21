@@ -1,0 +1,18 @@
+name = "JHistint"
+uuid = "f9cb9bd9-7498-4774-9389-dea22f18ae4d"
+authors = ["niccolo_mandelli <n.mandelli2@campus.unimib.it>"]
+repo = "https://github.com/niccolo99mandelli/JHistint.jl.git"
+version = "0.1.0"
+
+[deps]
+HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
+JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
+TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
+ZipFile = "a5390f91-8eb1-5f08-bee0-b1d1ffed6cea"
+
+[compat]
+HTTP = "1"
+JSON = "0.21"
+TOML = "1"
+ZipFile = "0.10"
+julia = "1"
