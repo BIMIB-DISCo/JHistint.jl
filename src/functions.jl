@@ -35,22 +35,20 @@ function print_collection_values(filepath::AbstractString)
             push!(collection_values, item["name"])
         end
     end
-    count=0
-    println("Choose the imaging collection from the list above: ")
-    for i in collection_values
-        count += 1
-        println(count," - TCGA-",i)
-    end    
+    # The names of the collection are avaiable on GitHub repository
+    # count=0
+    # println("Choose the imaging collection from the list above: ")
+    # for i in collection_values
+    #    count += 1
+    #    println(count," - TCGA-",i)
+    # end    
     return collection_values
 end
 
-@eval function select_collection_name(collection_values::Vector{Any})
+function select_collection_name(collection_values::Vector{Any})
     while true
         print("Insert the number of the collection of interest: ")
         num = parse(Int, readline())
-        if isempty(num) && !isspace(num)
-            
-        end
         if 1 ≤ num ≤ length(collection_values)
             println("Collection selected: TCGA-",collection_values[num])
             return collection_values[num]
@@ -59,7 +57,7 @@ end
     end 
 end
 
-@eval function download_project_infos(filepath::AbstractString, collection_name::AbstractString)
+function download_project_infos(filepath::AbstractString, collection_name::AbstractString)
     # Download project file as JSON file from the server
     url = "https://api.digitalslidearchive.org/api/v1/folder?parentType=collection&parentId=5b9ef8e3e62914002e454c39&name=$collection_name&sort=lowerName&sortdir=1"
     response = HTTP.get(url)
@@ -72,7 +70,7 @@ end
     end
 end
 
-@eval function extract_project_id(filepath::AbstractString)
+function extract_project_id(filepath::AbstractString)
     # Read the project info file and insert into a variable the data of the project ID
     json_string = read(filepath, String)
     json_object = JSON.parse(json_string)
@@ -88,7 +86,7 @@ end
     return project_id
 end
 
-@eval function getCasesForProject(filepath_case::AbstractString, project_id::AbstractString)
+function getCasesForProject(filepath_case::AbstractString, project_id::AbstractString)
     # Download case file as JSON file from the server
     url = "https://api.digitalslidearchive.org/api/v1/folder?parentType=folder&parentId=$project_id&limit=0&sort=lowerName&sortdir=1"
     response = HTTP.get(url)
@@ -118,7 +116,7 @@ end
 end
 
 # Download a slides in .zip format given the API URL and the folder path
-@eval function download_zip(link::AbstractString, filepath::AbstractString)
+function download_zip(link::AbstractString, filepath::AbstractString)
     response = HTTP.get(link)
     if response.status == 200
          open(filepath, "w") do file
