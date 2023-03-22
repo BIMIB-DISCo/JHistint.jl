@@ -1,7 +1,6 @@
 module JHistint
 include("functions.jl")
-# include("GUI.jl")
-# using Gtk
+
 using HTTP
 using JSON
 using ZipFile
@@ -13,11 +12,11 @@ using TOML
 #collection_list=print_collection_values(filepath_collection)
 #collection_name=select_collection_name(collection_list)
 #collection_name=build_GUI(collection_list)
-filepath_config = joinpath(@__DIR__, "..", "Config.toml")
-config = TOML.parsefile(filepath_config)
-collection_name = config["collection_name"]
+#filepath_config = joinpath(@__DIR__, "..", "Config.toml")
+#config = TOML.parsefile(filepath_config)
+#collection_name = config["collection_name"]
 
-if collection_name != "default"
+function download_single_collection(collection_name::AbstractString)
     # Project Management (TCGA-OR-A5J1, TCGA-OR-A5J2, etc.)
     #filepath_collection = "../collection/$collection_name.jsn"
     filepath_collection = joinpath(@__DIR__, "..", "collection", "$(collection_name).jsn")
@@ -51,7 +50,10 @@ if collection_name != "default"
             download_zip(link_slides, filepath_slides)
         end
     end
-else
-    println("Il valore della variabile è $collection_name. Accedere al file di configurazione e indicare una collezione. Interrompo l'esecuzione.")
 end
+
+#if collection_name != "default"
+#    else
+#        println("Il valore della variabile è $collection_name. Accedere al file di configurazione e indicare una collezione. #Interrompo l'esecuzione.")
+#    end
 end
