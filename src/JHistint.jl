@@ -45,6 +45,7 @@ function download_single_collection(collection_name::AbstractString)
 
     if lowercase(collection_name) in collection_list
         
+        collection_name = lowercase(collection_name)
         # Project Management (TCGA-OR-A5J1, TCGA-OR-A5J2, etc.)
         filepath_collection = joinpath(@__DIR__, "..", "collection", "$(collection_name).jsn")
         download_project_infos(filepath_collection, collection_name)
@@ -80,6 +81,7 @@ function download_single_collection(collection_name::AbstractString)
         collection_name = config["collection_name"]
         if collection_name != "default" && lowercase(collection_name) in collection_list
 
+            collection_name = lowercase(collection_name)
             # Project Management (TCGA-OR-A5J1, TCGA-OR-A5J2, etc.)
             filepath_collection = joinpath(@__DIR__, "..", "collection", "$(collection_name).jsn")
             download_project_infos(filepath_collection, collection_name)
