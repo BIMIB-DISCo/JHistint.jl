@@ -62,23 +62,6 @@ Le collezioni disponibili sono:
   * TCGA-DLBC = Lymphoid Neoplasm Diffuse Large B-cell Lymphoma (Various)
 Per il download di una collezione specifica è sufficiente indicare il nome della collezione: `BRCA`, `OV`, `LUAD`.
 
-## API
-Di seguito le API utilizzate nel progetto:
-* Per interrogare il repository in merito alle collezioni di dati per il quale sono disponibili slides istologiche nel TCGA viene utilizzato il seguente URL:  
-https://api.digitalslidearchive.org/api/v1/folder?parentType=collection&parentId=$idTCGA&limit=0&sort=lowerName&sortdir=1  
-L'URL richiede la definizione del `parentType` e del `parentId`. Il `parentId` specifica l'identificativo della collezione. La collezione di immagini associate al TCGA è identificata dal codice: `5b9ef8e3e62914002e454c39`. L'utilizzo del `limit=0` imposta l'assenza di limiti nel file interrogato, garantendo il downlod del file in modo completo. L'API appartiene alla categoria per gestire le folder memorizzate nel repository. Il file scaricato è `.json`.  
-* Per interrogare il repository e scaricare i metadati associati alla collezione scelta viene utilizzata la seguente URL:  
-https://api.digitalslidearchive.org/api/v1/folder?parentType=collection&parentId=5b9ef8e3e62914002e454c39&name=$collection_name&sort=lowerName&sortdir=1  
-L'URL richiede la definizione del `parentType`, del `parentId` e del `name`. L'attributo `name` identifica il nome della collezione di cui si desidera prelevare i dati (esempio: `chol`, `esca`, etc.). L'API appartiene alla categoria per gestire le folder memorizzate nel repository. Il file scaricato è `.json`.  
-* Per interrogare il repository e risalire alle informazioni dei singoli casi viene utilizzato il seguente URL:  
-https://api.digitalslidearchive.org/api/v1/folder?parentType=folder&parentId=$project_id&limit=0&sort=lowerName&sortdir=1  
-L'URL richiede la definizione del `parentType` e del `parentId`. Diversamente dalla prima API, l'attributo `parentType` è impostato a `folder` data la struttura del repository. Il `parentId` è configurato definendo l'identificativo della collezione scelta. Il file scaricato è `.json`.  
-* Per interrogare il repository e scaricare la slide corrispondente all'identificativo viene utilizzato il seguente URL:  
-https://api.digitalslidearchive.org/api/v1/folder/$x/download  
-L'URL consente di scaricare una folder in formato `.zip`. Il download viene effettuato in base all'identificativo della folder.  
-  
-Per ulteriori informazioni e creazione automatica degli URL consultare la seguente guida: https://api.digitalslidearchive.org/api/v1.  
-
 ## Installazione del Package
 Il package `JHistint` è disponibile nei Julia Registries, quindi installabile come segue:
 ```
@@ -90,5 +73,39 @@ In alternativa, digitare `]` nel Julia REPL ed eseguire:
 ```
 (@v1.8) pkg > add JHistint
 (@v1.8) pkg > using JHistint
-```   
+``` 
+## Funzioni Download Slides (JHistint.jl)
+
+```@docs
+download_single_collection(collection_name::AbstractString)
+```
+
+```@docs
+download_all_collection()
+```
+
+## Funzioni di supporto API (functions.jl)
+```@docs
+download_collection_values(filepath::AbstractString)
+```
+
+```@docs
+extract_collection_values(filepath::AbstractString)
+```
+
+```@docs
+download_project_infos(filepath::AbstractString, collection_name::AbstractString)
+```
+
+```@docs
+extract_project_id(filepath::AbstractString)
+```
+
+```@docs
+getCasesForProject(filepath_case::AbstractString, project_id::AbstractString)
+```
+
+```@docs
+download_zip(link::AbstractString, filepath::AbstractString)
+```
 
