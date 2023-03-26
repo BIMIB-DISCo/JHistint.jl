@@ -59,7 +59,7 @@ Le collezioni disponibili sono:
   * TCGA-KICH = Kidney Chromophobe (Kidney)
   * TCGA-UCS = Uterine Carcinosarcoma (Uterus, NOS)
   * TCGA-CHOL = Cholangiocarcinoma (Liver and intrahepatic bile ducts, Other and unspecified part of biliary track)
-  * TCGA-DLBC = Lymphoid Neoplasm Diffuse Large B-cell Lymphoma (Various)
+  * TCGA-DLBC = Lymphoid Neoplasm Diffuse Large B-cell Lymphoma (Various)  
 Per il download di una collezione specifica è sufficiente indicare il nome della collezione: `BRCA`, `OV`, `LUAD`.
 
 ## API
