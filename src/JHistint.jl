@@ -68,7 +68,7 @@ function download_single_collection(collection_name::AbstractString)
                 end
                 filepath_slides = joinpath(@__DIR__, "..", "slides", "svs", "$(collection_name)", "$j", "$(y).zip")
                 link_slides = "https://api.digitalslidearchive.org/api/v1/folder/$x/download"
-                println("DOWNLOADING : CASE NAME = $j - CASE ID = $i - SINGLE CASE NAME = $y")
+                println("DOWNLOADING : CASE NAME = $j - CASE ID = $i - SINGLE CASE NAME = $y - $x")
                 download_zip(link_slides, filepath_slides)
             end
         end
