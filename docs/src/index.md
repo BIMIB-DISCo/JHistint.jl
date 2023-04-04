@@ -2,6 +2,8 @@
 
 Interfaccia Julia per implementazione delle REST API disponibili sul portale CDSA (Cancer Slide Digital Archive) per il download di immagini istologiche reperibili nel TCGA (The Cancer Genome Atlas). Il Cancer Slide Digital Archive (CDSA) è una piattaforma web per il supporto, la condivisione e l'analisi di dati patologici digitali. Attualmente ospita oltre 23.000 immagini associate ai dati disponibili nel «The Cancer Genome Atlas» Data Portal.  
 
+Link GitHub repository: [JHistint.jl](https://github.com/niccolo99mandelli/JHistint.jl) 
+
 Link d'accesso al CDSA: [Clicca qui](https://api.digitalslidearchive.org/#collections)    
 
 Link repository contenente i dati mappati nel portale: [Clicca qui](https://cancer.digitalslidearchive.org/#!/CDSA/acc/TCGA-OR-A5J1)
@@ -26,7 +28,7 @@ Esempio: TCGA-02-0001-01C-01-TS1.zip
   - TS1 = si riferisce al campo Slide relativo al tipo di immagine. I valori assumbili sono TS (Top Slide), BS (Bottom Slide) e MS (Middle Slide). Il valore alfanumerico indica l'ordinamento della slide.
 ```
 
-## Collezioni JHistint 
+## Collezioni JHistint
 Le collezioni disponibili sono:  
   * TCGA-BRCA = Breast Invasive Carcinoma (Breast)
   * TCGA-OV = Ovarian Serous Cystadenocarcinoma (Ovary)
@@ -73,7 +75,7 @@ In alternativa, digitare `]` nel Julia REPL ed eseguire:
 ```
 (@v1.8) pkg > add JHistint
 (@v1.8) pkg > using JHistint
-``` 
+```
 ## Funzioni Download Slides (JHistint.jl)
 
 ```@docs
@@ -84,7 +86,7 @@ download_single_collection(collection_name::AbstractString)
 download_all_collection()
 ```
 
-## Funzioni di supporto API (functions.jl)
+## Funzioni di supporto API (apiManager.jl)
 ```@docs
 download_collection_values(filepath::AbstractString)
 ```
@@ -109,3 +111,19 @@ getCasesForProject(filepath_case::AbstractString, project_id::AbstractString)
 download_zip(link::AbstractString, filepath::AbstractString)
 ```
 
+## Funzioni di supporto DB (dbManager.jl)
+```@docs
+insert_record_DB(col_name::AbstractString,
+                        cas_name::AbstractString,
+                        tcga_case_id::AbstractString,
+                        sin_cas_name::AbstractString,
+                        tcga_slide_id::AbstractString,
+                        link_slide::AbstractString,
+                        filepath_zip::AbstractString,
+                        filepath_svs::AbstractString)
+```
+
+## Funzioni di supporto ZIP (zipManager.jl)
+```@docs
+extract_slide(filepath_zip::AbstractString)
+```
