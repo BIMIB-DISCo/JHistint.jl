@@ -5,12 +5,16 @@ using HTTP
 using JSON
 using ZipFile
 using TOML
+using SQLite
+using Images
 
 # Exported Functions
 export download_single_collection
 export download_all_collection
 
-include("functions.jl")
+include("apiManager.jl")
+include("dbManager.jl")
+include("zipManager.jl")
 
 # Line of code to input the name of collection from command line. Not usable in Package
 # collection_name = select_collection_name(collection_list)
@@ -18,13 +22,13 @@ include("functions.jl")
 """
     download_single_collection(collection_name::AbstractString)
 
-Funzione per il download delle slides istologiche associate ad una collezione disponibile nel TCGA. 
+Funzione per il download delle slides istologiche associate ad una collezione disponibile nel TCGA.
 
 # Argomenti
 - `collection_name::AbstractString` = Collezione di dati TCGA di cui scaricare le slides istologiche.
 
-# Note 
-La funzione valuta l'argomento `collection_name`, in caso di collezione non valida considera 
+# Note
+La funzione valuta l'argomento `collection_name`, in caso di collezione non valida considera
 la configurazione del file `Config.toml`. Il valore impostato nel package è `default`.
 ```julia
 # Esempi con input validi
@@ -44,7 +48,7 @@ function download_single_collection(collection_name::AbstractString)
     collection_list = extract_collection_values(filepath_collection)
 
     if lowercase(collection_name) in collection_list
-        
+
         collection_name = lowercase(collection_name)
         # Project Management (TCGA-OR-A5J1, TCGA-OR-A5J2, etc.)
         filepath_collection = joinpath(@__DIR__, "..", "collection", "$(collection_name).jsn")
@@ -68,8 +72,10 @@ function download_single_collection(collection_name::AbstractString)
                 end
                 filepath_slides = joinpath(@__DIR__, "..", "slides", "svs", "$(collection_name)", "$j", "$(y).zip")
                 link_slides = "https://api.digitalslidearchive.org/api/v1/folder/$x/download"
-                println("DOWNLOADING : CASE NAME = $j - CASE ID = $i - SINGLE CASE NAME = $y - $x")
+                println("DOWNLOADING Slide : CASE NAME = $j - SLIDE ID = $y")
                 download_zip(link_slides, filepath_slides)
+                filepath_svs = extract_slide(filepath_slides)
+                insert_record_DB(collection_name, j, i, y, x, link_slides, filepath_slides, filepath_svs)
             end
         end
     else
@@ -104,11 +110,13 @@ function download_single_collection(collection_name::AbstractString)
                     end
                     filepath_slides = joinpath(@__DIR__, "..", "slides", "svs", "$(collection_name)", "$j", "$(y).zip")
                     link_slides = "https://api.digitalslidearchive.org/api/v1/folder/$x/download"
-                    println("DOWNLOADING : CASE NAME = $j - CASE ID = $i - SINGLE CASE NAME = $y")
+                    println("DOWNLOADING Slide : CASE NAME = $j - SLIDE ID = $y")
                     download_zip(link_slides, filepath_slides)
+                    filepath_svs = extract_slide(filepath_slides)
+                    insert_record_DB(collection_name, j, i, y, x, link_slides, filepath_slides, filepath_svs)
                 end
             end
-        else 
+        else
             println("ERROR : $collection_name - collection not avaiable. Change collection_name field in Config.toml.")
         end
     end
@@ -117,7 +125,7 @@ end
 """
     download_all_collection()
 
-Funzione per il download delle slides istologiche associate a tutte le collezioni disponbile nel TCGA. 
+Funzione per il download delle slides istologiche associate a tutte le collezioni disponbile nel TCGA.
 
 ```julia
 # Esempi con input validi
@@ -129,7 +137,7 @@ function download_all_collection()
     filepath_collection = joinpath(@__DIR__, "..", "collection", "collectionlist.jsn")
     download_collection_values(filepath_collection)
     collection_list=extract_collection_values(filepath_collection)
-    
+
     for collection_name in collection_list
         # Project Management (TCGA-OR-A5J1, TCGA-OR-A5J2, etc.)
         filepath_collection = joinpath(@__DIR__, "..", "collection", "$(collection_name).jsn")
@@ -153,8 +161,10 @@ function download_all_collection()
                 end
                 filepath_slides = joinpath(@__DIR__, "..", "slides", "svs", "$(collection_name)", "$j", "$(y).zip")
                 link_slides = "https://api.digitalslidearchive.org/api/v1/folder/$x/download"
-                println("DOWNLOADING : CASE NAME = $j - CASE ID = $i - SINGLE CASE NAME = $y")
+                println("DOWNLOADING Slide : CASE NAME = $j - SLIDE ID = $y")
                 download_zip(link_slides, filepath_slides)
+                filepath_svs = extract_slide(filepath_slides)
+                insert_record_DB(collection_name, j, i, y, x, link_slides, filepath_slides, filepath_svs)
             end
         end
     end
