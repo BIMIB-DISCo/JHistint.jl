@@ -1,9 +1,5 @@
 # JHistint.jl - Julia Histopathology Interface
 
-| **Documentation**                 | **Build Status**                                              |
-|:----------------------------------|:--------------------------------------------------------------|
-| [![][docs-dev-img]][docs-dev-url] | [![][status-img]][status-url] [![][travis-img]][travis-url] [![][codecov-img]][codecov-url] |
-
 Interfaccia Julia per implementazione delle REST API disponibili sul portale CDSA (Cancer Slide Digital Archive) per il download di immagini istologiche reperibili nel TCGA (The Cancer Genome Atlas). Il Cancer Slide Digital Archive (CDSA) è una piattaforma web per il supporto, la condivisione e l'analisi di dati patologici digitali. Attualmente ospita oltre 23.000 immagini associate ai dati disponibili nel «The Cancer Genome Atlas» Data Portal.  
 
 Link d'accesso al CDSA: [Clicca qui](https://api.digitalslidearchive.org/#collections)    
