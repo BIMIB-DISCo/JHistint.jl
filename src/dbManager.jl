@@ -1,4 +1,6 @@
 export insert_record_DB
+export query_extract_slide_svs
+export load_seg_slide
 
 """
     insert_record_DB(col_name::AbstractString,
@@ -32,7 +34,9 @@ Dati disponibili nel database `JHistint_DB` per ogni slide:
 - `slide_path_folder_zip TEXT` = Percorso in cui è memorizzato il file `.zip`.
 - `slide_path_folder_svs TEXT` = Percorso in cui è memorizzato il file `.svs`.
 - `slide_path_api TEXT` = Link alle API per il download della slide.
-- `slide_svs BLOB` = Slide istolpatologica (immagine).
+- `slide_path_folder_seg TEXT` = Percorso in cui è memorizzato il file `.tif` segmentata.
+- `slide_svs BLOB` = Slide istopatologica (immagine).
+- `slide_seg BLOB` = Slide istopatologica segmentata (immagine).
 - `slide_info_TSS TEXT` = Informazioni sulla slide - Tissue Source Site.
 - `slide_info_participant_code TEXT` = Informazioni sulla slide - Codice associato al Participant, stringa alfanumerica.
 - `slide_info_sample_type TEXT` = Informazioni sulla slide - Sample Type. I valori associati ai campioni aventi tumori sono nell'intervallo 01 - 09. 10 - 19 indica l'intervallo dedicato a campioni normali non malati. 20 - 29 indica campioni attualmente sotto controllo.
@@ -58,8 +62,8 @@ function insert_record_DB(col_name::AbstractString,
     sample_type = sample_type_vial[1:2]
     vial = sample_type_vial[3:3]
     # Extract data from image slide
-    # filepath_svs = "C:/Users/nicom/Desktop/JHistint.jl/slides/svs/acc/TCGA-OR-A5J1/TCGA-OR-A5J1-01A-01-TS1/Cattura.PNG"
-    # svs_image = read(filepath_svs)
+    # filepath_svs = "C:/Users/nicom/Desktop/segmentation/TCGA-OR-A5J1-01A-01-TS1.CFE08710-54B8-45B0-86AE-500D6E36D8A5_001.svs"
+    svs_image = load(filepath_svs)
 
     # Connect to DB
     db = SQLite.DB("JHistint_DB")
@@ -72,7 +76,9 @@ function insert_record_DB(col_name::AbstractString,
                                         slide_path_folder_zip TEXT,
                                         slide_path_folder_svs TEXT,
                                         slide_path_api TEXT,
+                                        slide_path_folder_seg TEXT,
                                         slide_svs BLOB,
+                                        slide_seg BLOB,
                                         slide_info_TSS TEXT,
                                         slide_info_participant_code TEXT,
                                         slide_info_sample_type TEXT,
@@ -89,13 +95,14 @@ function insert_record_DB(col_name::AbstractString,
                            slide_path_folder_zip,
                            slide_path_folder_svs,
                            slide_path_api,
+                           slide_svs,
                            slide_info_TSS,
                            slide_info_participant_code,
                            slide_info_sample_type,
                            slide_info_vial,
                            slide_info_portion,
                            slide_info_type) VALUES
-                           (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+                           (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
     DBInterface.execute(stmt, [col_name,
                                cas_name,
                                tcga_case_id,
@@ -104,6 +111,7 @@ function insert_record_DB(col_name::AbstractString,
                                filepath_zip,
                                filepath_svs,
                                link_slide,
+                               svs_image,
                                TSS,
                                participant_code,
                                sample_type,
@@ -112,4 +120,50 @@ function insert_record_DB(col_name::AbstractString,
                                type])
     # Show tables in the database
     # SQLite.tables(db) # Empty Database with no tables
+    SQLite.close(db)
+end
+
+"""
+    query_extract_slide_svs(collection_name::AbstractString)
+
+La funzione interroga il `JHistint_DB` ed estrae la lista di slide associate al nome della collezione fornita come argomento.
+
+# Argomenti
+- `collection_name::AbstractString`: Nome della collezione di slide da ricercare nel `JHistint_DB`.
+
+# Valore di ritorno
+- `slide_list`: Lista di tuple, ognuna delle quali contiene l'ID della slide, il file `.svs` della slide e il percorso della cartella contenente il file `.svs`.
+"""
+function query_extract_slide_svs(collection_name::AbstractString)
+    db = SQLite.DB("JHistint_DB")
+    stmt = SQLite.Stmt(db, "SELECT * FROM Slide WHERE collection_name LIKE '%' || ? || '%'")
+    results = DataFrame(DBInterface.execute(stmt, [collection_name]))
+    slide_list = []
+    if !isempty(results)
+        for row in eachrow(results)
+            slide = (row.slide_ID, row.slide_svs, row.slide_path_folder_svs)
+            push!(slide_list, slide)
+        end
+    end
+    SQLite.close(db)
+    return slide_list
+end
+
+"""
+    load_seg_slide(filepath_seg::AbstractString, segmented_slide::Array{ColorTypes.RGB{Float32}, 3}, slide_id::AbstractString)
+
+La funzione aggiorna il `JHistint_DB` con il percorso del file dell'immagine segmentata e l'immagine segmentata.
+
+# Argomento
+- `filepath_seg::AbstractString`: Percorso del file dell'immagine segmentata da aggiungere al DB.
+- `segmented_slide::Array{ColorTypes.RGB{Float32}, 3}`: Immagine segmentata da aggiungere al DB.
+- `slide_id::AbstractString`: ID della slide da aggiornare con le informazioni dell'immagine segmentata.
+"""
+function load_seg_slide(filepath_seg::AbstractString, segmented_slide::Array{ColorTypes.RGB{Float32}, 3}, slide_id::AbstractString)
+    db = SQLite.DB("JHistint_DB")
+    stmt = SQLite.Stmt(db, "
+       UPDATE Slide SET slide_path_folder_seg = ?,
+                          slide_seg = ? WHERE slide_ID = ?")
+    DBInterface.execute(stmt, [filepath_seg, segmented_slide, slide_id])
+    SQLite.close(db)
 end

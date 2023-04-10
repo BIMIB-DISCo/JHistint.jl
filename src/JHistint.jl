@@ -6,15 +6,23 @@ using JSON
 using ZipFile
 using TOML
 using SQLite
+using DataFrames
 using Images
+using ImageSegmentation
+using ImageView
+using FileIO
+using Random
 
 # Exported Functions
 export download_single_collection
 export download_all_collection
+export slide_cell_segmentation
 
+# Included Files
 include("apiManager.jl")
 include("dbManager.jl")
 include("zipManager.jl")
+include("segmentationManager.jl")
 
 # Line of code to input the name of collection from command line. Not usable in Package
 # collection_name = select_collection_name(collection_list)
@@ -167,6 +175,52 @@ function download_all_collection()
                 insert_record_DB(collection_name, j, i, y, x, link_slides, filepath_slides, filepath_svs)
             end
         end
+    end
+end
+
+"""
+    slide_cell_segmentation(collection_name::AbstractString)
+
+Funzione per esecuzione della segmentazione cellulare delle slide istopatologiche presenti nel database JHistint_DB associate al nome della collezione fornita come argomento.
+
+# Argomenti
+- `collection_name::AbstractString` = Collezione di slide TCGA di cui effettuare la segmentazione cellulare.
+
+# Note
+Per ogni slide nel DB viene eseguita la segmentazione delle cellule utilizzando la funzione `apply_segmentation` e il risultato viene salvato nel DB utilizzando la funzione `load_seg_slide`.
+Infine, viene stampato un messaggio di conferma per ogni slide segmentata.
+```julia
+# Esempi con input validi
+julia> JHistint.slide_cell_segmentation("acc")
+julia> JHistint.slide_cell_segmentation("bLca")
+```
+```julia
+# Esempi con input non validi
+julia> JHistint.slide_cell_segmentation("ac")
+julia> JHistint.slide_cell_segmentation("")
+```
+"""
+function slide_cell_segmentation(collection_name::AbstractString)
+    # Check the value of the parameter
+    filepath_collection = joinpath(@__DIR__, "..", "collection", "collectionlist.jsn")
+    download_collection_values(filepath_collection)
+    collection_list = extract_collection_values(filepath_collection)
+
+    if lowercase(collection_name) in collection_list
+        collection_name = lowercase(collection_name)
+        slide_list = query_extract_slide_svs(collection_name)
+        if isempty(slide_list)
+            println("ERROR : No match for $collection_name - collection in DB. Download the collection before.")
+        else
+            for record in slide_list
+                filepath_seg, segmented_slide = apply_segmentation(record)
+                load_seg_slide(filepath_seg, segmented_slide, record[1])
+                slide_id = record[1]
+                println("SEGMENTATION Slide : SLIDE ID = $slide_id")
+            end
+        end
+    else
+        println("ERROR : $collection_name - collection not avaiable. Retry with a new collection.")
     end
 end
 end
