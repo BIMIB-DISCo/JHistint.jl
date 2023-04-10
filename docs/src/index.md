@@ -2,7 +2,7 @@
 
 Interfaccia Julia per implementazione delle REST API disponibili sul portale CDSA (Cancer Slide Digital Archive) per il download di immagini istologiche reperibili nel TCGA (The Cancer Genome Atlas). Il Cancer Slide Digital Archive (CDSA) è una piattaforma web per il supporto, la condivisione e l'analisi di dati patologici digitali. Attualmente ospita oltre 23.000 immagini associate ai dati disponibili nel «The Cancer Genome Atlas» Data Portal.  
 
-Link GitHub repository: [JHistint.jl](https://github.com/niccolo99mandelli/JHistint.jl) 
+Link GitHub repository: [JHistint.jl](https://github.com/niccolo99mandelli/JHistint.jl)
 
 Link d'accesso al CDSA: [Clicca qui](https://api.digitalslidearchive.org/#collections)    
 
@@ -77,13 +77,44 @@ In alternativa, digitare `]` nel Julia REPL ed eseguire:
 (@v1.8) pkg > using JHistint
 ```
 ## Funzioni Download Slides (JHistint.jl)
-
 ```@docs
 download_single_collection(collection_name::AbstractString)
 ```
 
 ```@docs
 download_all_collection()
+```
+## Funzioni Segmentazione Slides (JHistint.jl)
+```@docs
+slide_cell_segmentation(collection_name::AbstractString)
+```
+
+## Funzioni di supporto per Segmentazione (segmentationManager.jl)
+```@docs
+apply_segmentation(slide_info::Tuple{String, Array{ColorTypes.RGB{FixedPointNumbers.N0f8}, 3}, String})
+```
+
+```@docs
+get_random_color(seed)
+```
+## Funzioni di supporto DB (dbManager.jl)
+```@docs
+insert_record_DB(col_name::AbstractString,
+                        cas_name::AbstractString,
+                        tcga_case_id::AbstractString,
+                        sin_cas_name::AbstractString,
+                        tcga_slide_id::AbstractString,
+                        link_slide::AbstractString,
+                        filepath_zip::AbstractString,
+                        filepath_svs::AbstractString)
+```
+
+```@docs
+query_extract_slide_svs(collection_name::AbstractString)
+```
+
+```@docs
+load_seg_slide(filepath_seg::AbstractString, segmented_slide::Array{ColorTypes.RGB{Float32}, 3}, slide_id::AbstractString)
 ```
 
 ## Funzioni di supporto API (apiManager.jl)
@@ -109,18 +140,6 @@ getCasesForProject(filepath_case::AbstractString, project_id::AbstractString)
 
 ```@docs
 download_zip(link::AbstractString, filepath::AbstractString)
-```
-
-## Funzioni di supporto DB (dbManager.jl)
-```@docs
-insert_record_DB(col_name::AbstractString,
-                        cas_name::AbstractString,
-                        tcga_case_id::AbstractString,
-                        sin_cas_name::AbstractString,
-                        tcga_slide_id::AbstractString,
-                        link_slide::AbstractString,
-                        filepath_zip::AbstractString,
-                        filepath_svs::AbstractString)
 ```
 
 ## Funzioni di supporto ZIP (zipManager.jl)
