@@ -80,7 +80,7 @@ function download_single_collection(collection_name::AbstractString)
                 end
                 filepath_slides = joinpath(@__DIR__, "..", "slides", "svs", "$(collection_name)", "$j", "$(y).zip")
                 link_slides = "https://api.digitalslidearchive.org/api/v1/folder/$x/download"
-                println("DOWNLOADING Slide : CASE NAME = $j - SLIDE ID = $y")
+                println("DOWNLOAD Slide Complete: CASE NAME = $j - SLIDE ID = $y")
                 download_zip(link_slides, filepath_slides)
                 filepath_svs = extract_slide(filepath_slides)
                 insert_record_DB(collection_name, j, i, y, x, link_slides, filepath_slides, filepath_svs)
@@ -118,7 +118,7 @@ function download_single_collection(collection_name::AbstractString)
                     end
                     filepath_slides = joinpath(@__DIR__, "..", "slides", "svs", "$(collection_name)", "$j", "$(y).zip")
                     link_slides = "https://api.digitalslidearchive.org/api/v1/folder/$x/download"
-                    println("DOWNLOADING Slide : CASE NAME = $j - SLIDE ID = $y")
+                    println("DOWNLOAD Slide Complete: CASE NAME = $j - SLIDE ID = $y")
                     download_zip(link_slides, filepath_slides)
                     filepath_svs = extract_slide(filepath_slides)
                     insert_record_DB(collection_name, j, i, y, x, link_slides, filepath_slides, filepath_svs)
@@ -169,7 +169,7 @@ function download_all_collection()
                 end
                 filepath_slides = joinpath(@__DIR__, "..", "slides", "svs", "$(collection_name)", "$j", "$(y).zip")
                 link_slides = "https://api.digitalslidearchive.org/api/v1/folder/$x/download"
-                println("DOWNLOADING Slide : CASE NAME = $j - SLIDE ID = $y")
+                println("DOWNLOAD Slide Complete: CASE NAME = $j - SLIDE ID = $y")
                 download_zip(link_slides, filepath_slides)
                 filepath_svs = extract_slide(filepath_slides)
                 insert_record_DB(collection_name, j, i, y, x, link_slides, filepath_slides, filepath_svs)
@@ -216,7 +216,7 @@ function slide_cell_segmentation(collection_name::AbstractString)
                 filepath_seg, segmented_slide = apply_segmentation(record)
                 load_seg_slide(filepath_seg, segmented_slide, record[1])
                 slide_id = record[1]
-                println("SEGMENTATION Slide : SLIDE ID = $slide_id")
+                println("SEGMENTATION Slide Complete: SLIDE ID = $slide_id")
             end
         end
     else
