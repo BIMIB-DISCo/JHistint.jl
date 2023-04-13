@@ -64,11 +64,9 @@ function insert_record_DB(col_name::AbstractString,
     # Extract data from image slide
     # filepath_svs = "C:/Users/nicom/Desktop/segmentation/TCGA-OR-A5J1-01A-01-TS1.CFE08710-54B8-45B0-86AE-500D6E36D8A5_001.tif"
     svs_image = read(filepath_svs)
-    # imshow(svs_image)
     # svs_image = ImageMagick.load_(svs_image_byte)
 
     # Connect to DB
-    # db = SQLite.DB("JHistint_DB")
     db = SQLite.DB(joinpath(@__DIR__, "..", "JHistint_DB"))
     # Create a Table(Slide)
     SQLite.execute(db, "CREATE TABLE IF NOT EXISTS Slide(collection_name TEXT,
@@ -88,7 +86,6 @@ function insert_record_DB(col_name::AbstractString,
                                         slide_info_vial TEXT,
                                         slide_info_portion TEXT,
                                         slide_info_type TEXT)")
-
      stmt = SQLite.Stmt(db, "
         INSERT OR REPLACE INTO Slide (collection_name,
                            case_name,
@@ -122,9 +119,6 @@ function insert_record_DB(col_name::AbstractString,
                                vial,
                                portion,
                                type])
-                               #
-    # Show tables in the database
-    # SQLite.tables(db) # Empty Database with no tables
     SQLite.close(db)
 end
 
@@ -140,7 +134,6 @@ La funzione interroga il `JHistint_DB` ed estrae la lista di slide associate al 
 - `slide_list`: Lista di tuple, ognuna delle quali contiene l'ID della slide, il file `.svs` della slide e il percorso della cartella contenente il file `.svs`.
 """
 function query_extract_slide_svs(collection_name::AbstractString)
-    # db = SQLite.DB("JHistint_DB")
     db = SQLite.DB(joinpath(@__DIR__, "..", "JHistint_DB"))
     stmt = SQLite.Stmt(db, "SELECT * FROM Slide WHERE collection_name LIKE '%' || ? || '%'")
     results = DataFrame(DBInterface.execute(stmt, [collection_name]))
@@ -166,7 +159,6 @@ La funzione aggiorna il `JHistint_DB` con il percorso del file dell'immagine seg
 - `slide_id::AbstractString`: ID della slide da aggiornare con le informazioni dell'immagine segmentata.
 """
 function load_seg_slide(filepath_seg::AbstractString, segmented_slide::Array{ColorTypes.RGB{Float32}, 3}, slide_id::AbstractString)
-    # db = SQLite.DB("JHistint_DB")
     db = SQLite.DB(joinpath(@__DIR__, "..", "JHistint_DB"))
     stmt = SQLite.Stmt(db, "
        UPDATE Slide SET slide_path_folder_seg = ?,

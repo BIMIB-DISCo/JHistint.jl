@@ -15,8 +15,9 @@ function extract_slide(filepath_zip::AbstractString)
     # Extract .zip content
     for entry in archive.files
         # Build destination path - Change here for image type
-        file_name = replace(entry.name, ".svs" => ".jpeg")
-        dest_path = joinpath(dirname(filepath_zip), file_name)
+        # file_name = replace(entry.name, ".svs" => ".tif")
+        # dest_path = joinpath(dirname(filepath_zip), file_name)
+        dest_path = joinpath(dirname(filepath_zip), entry.name)
         if !isdir(dirname(dest_path))
             mkdir(dirname(dest_path))
         end
