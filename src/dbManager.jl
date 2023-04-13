@@ -63,8 +63,9 @@ function insert_record_DB(col_name::AbstractString,
     vial = sample_type_vial[3:3]
     # Extract data from image slide
     # filepath_svs = "C:/Users/nicom/Desktop/segmentation/TCGA-OR-A5J1-01A-01-TS1.CFE08710-54B8-45B0-86AE-500D6E36D8A5_001.tif"
-    svs_image_byte = read(filepath_svs)
-    svs_image = ImageMagick.load_(svs_image_byte)
+    svs_image = load(filepath_svs)
+    println("test")
+    # svs_image = ImageMagick.load_(svs_image_byte)
 
     # Connect to DB
     # db = SQLite.DB("JHistint_DB")
@@ -97,7 +98,6 @@ function insert_record_DB(col_name::AbstractString,
                            slide_path_folder_zip,
                            slide_path_folder_svs,
                            slide_path_api,
-                           slide_svs,
                            slide_info_TSS,
                            slide_info_participant_code,
                            slide_info_sample_type,
@@ -105,6 +105,7 @@ function insert_record_DB(col_name::AbstractString,
                            slide_info_portion,
                            slide_info_type) VALUES
                            (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+                           # slide_svs,
     DBInterface.execute(stmt, [col_name,
                                cas_name,
                                tcga_case_id,
@@ -113,13 +114,13 @@ function insert_record_DB(col_name::AbstractString,
                                filepath_zip,
                                filepath_svs,
                                link_slide,
-                               svs_image,
                                TSS,
                                participant_code,
                                sample_type,
                                vial,
                                portion,
                                type])
+                               # svs_image,
     # Show tables in the database
     # SQLite.tables(db) # Empty Database with no tables
     SQLite.close(db)
