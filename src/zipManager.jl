@@ -14,8 +14,8 @@ function extract_slide(filepath_zip::AbstractString)
     archive = ZipFile.Reader(filepath_zip)
     # Extract .zip content
     for entry in archive.files
-        # Build destination path
-        file_name = replace(entry.name, ".svs" => ".tif")
+        # Build destination path - Change here for image type
+        file_name = replace(entry.name, ".svs" => ".jpeg")
         dest_path = joinpath(dirname(filepath_zip), file_name)
         if !isdir(dirname(dest_path))
             mkdir(dirname(dest_path))
