@@ -9,6 +9,7 @@ using SQLite
 using DataFrames
 using Images
 using ImageSegmentation
+using ImageMagick
 using ImageView
 using FileIO
 using Random
