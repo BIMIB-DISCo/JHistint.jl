@@ -98,14 +98,15 @@ function insert_record_DB(col_name::AbstractString,
                            slide_path_folder_zip,
                            slide_path_folder_svs,
                            slide_path_api,
+                           slide_svs,
                            slide_info_TSS,
                            slide_info_participant_code,
                            slide_info_sample_type,
                            slide_info_vial,
                            slide_info_portion,
                            slide_info_type) VALUES
-                           (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
-                           # slide_svs,
+                           (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+
     DBInterface.execute(stmt, [col_name,
                                cas_name,
                                tcga_case_id,
@@ -114,13 +115,14 @@ function insert_record_DB(col_name::AbstractString,
                                filepath_zip,
                                filepath_svs,
                                link_slide,
+                               svs_image,
                                TSS,
                                participant_code,
                                sample_type,
                                vial,
                                portion,
                                type])
-                               # svs_image,
+                               #
     # Show tables in the database
     # SQLite.tables(db) # Empty Database with no tables
     SQLite.close(db)
