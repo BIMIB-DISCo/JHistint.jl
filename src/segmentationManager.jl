@@ -33,8 +33,10 @@ La funzione esegue la segmentazione di un'immagine istologica.
 La funzione utilizza l'algoritmo di segmentazione watershed per segmentare l'immagine in diversi raggruppamenti di pixel. La segmentazione viene eseguita utilizzando una trasformazione delle caratteristiche dell'immagine (`feature_transform`) e l'etichettatura dei componenti connessi. Viene quindi calcolata la distanza tra le diverse regioni e viene costruito un grafo di adiacenza delle regioni, utilizzando la funzione `region_adjacency_graph`. Viene inoltre assegnato un colore casuale a ciascuna regione segmentata.
 Infine, viene salvata un'immagine `.tif` segmentata e viene restituito il percorso del file della slide segmentata e la slide stessa.
 """
-function apply_segmentation(slide_info::Tuple{String, Array{ColorTypes.RGB{FixedPointNumbers.N0f8}, 3}, String})
-    img = slide_info[2]
+function apply_segmentation(slide_info::Tuple{String, Vector{UInt8}, String})
+    svs_image = slide_info[2]
+    img = ImageMagick.load_(svs_image)
+    imshow(img)
     bw = Gray.(img) .> 0.20
     dist = 1 .- distance_transform(feature_transform(bw))
     markers = label_components(dist .< -0.3)
@@ -42,7 +44,7 @@ function apply_segmentation(slide_info::Tuple{String, Array{ColorTypes.RGB{Fixed
     segmented_slide = map(i->get_random_color(i), labels_map(segments)) .* (1 .-bw)
     weight_fn(i,j) = euclidean(segment_pixel_count(segments,i), segment_pixel_count(segments,j))
     G, vert_map = region_adjacency_graph(segments, weight_fn)
-    filepath_seg = replace(slide_info[3], ".jpeg" => "_seg.jpeg")
+    filepath_seg = replace(slide_info[3], ".svs" => "_seg.svs")
     # filepath_seg = replace(slide_info[3], ".svs" => "_seg.tif")
     println(G)
     println(vert_map)

@@ -158,7 +158,8 @@ La funzione aggiorna il `JHistint_DB` con il percorso del file dell'immagine seg
 - `segmented_slide::Array{ColorTypes.RGB{Float32}, 3}`: Immagine segmentata da aggiungere al DB.
 - `slide_id::AbstractString`: ID della slide da aggiornare con le informazioni dell'immagine segmentata.
 """
-function load_seg_slide(filepath_seg::AbstractString, segmented_slide::Array{ColorTypes.RGB{Float32}, 3}, slide_id::AbstractString)
+# function load_seg_slide(filepath_seg::AbstractString, segmented_slide::Array{ColorTypes.RGB{Float32}, 3}, slide_id::AbstractString)
+function load_seg_slide(filepath_seg::AbstractString, segmented_slide::Vector{UInt8}, slide_id::AbstractString)
     db = SQLite.DB(joinpath(@__DIR__, "..", "JHistint_DB"))
     stmt = SQLite.Stmt(db, "
        UPDATE Slide SET slide_path_folder_seg = ?,
