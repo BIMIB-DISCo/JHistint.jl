@@ -104,7 +104,7 @@ function insert_record_DB(col_name::AbstractString,
                            slide_info_vial,
                            slide_info_portion,
                            slide_info_type) VALUES
-                           (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
+                           (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)")
                            # slide_svs,
     DBInterface.execute(stmt, [col_name,
                                cas_name,
