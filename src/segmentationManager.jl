@@ -36,7 +36,7 @@ Infine, viene salvata un'immagine `.tif` segmentata e viene restituito il percor
 function apply_segmentation(slide_info::Tuple{String, Vector{UInt8}, String})
     svs_image = slide_info[2]
     img = ImageMagick.load_(svs_image)
-    imshow(img)
+    # imshow(img)
     bw = Gray.(img) .> 0.20
     dist = 1 .- distance_transform(feature_transform(bw))
     markers = label_components(dist .< -0.3)
