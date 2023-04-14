@@ -35,13 +35,17 @@ Infine, viene salvata un'immagine `.tif` segmentata e viene restituito il percor
 """
 function apply_segmentation(slide_info::Tuple{String, Vector{UInt8}, String})
     svs_image = slide_info[2]
+    println("1")
     img = ImageMagick.load_(svs_image)
     # imshow(img)
+    println("1")
     bw = Gray.(img) .> 0.20
     dist = 1 .- distance_transform(feature_transform(bw))
     markers = label_components(dist .< -0.3)
     segments = watershed(dist, markers)
+    println("1")
     segmented_slide = map(i->get_random_color(i), labels_map(segments)) .* (1 .-bw)
+    println("1")
     weight_fn(i,j) = euclidean(segment_pixel_count(segments,i), segment_pixel_count(segments,j))
     G, vert_map = region_adjacency_graph(segments, weight_fn)
     filepath_seg = replace(slide_info[3], ".svs" => "_seg.svs")
