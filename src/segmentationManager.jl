@@ -48,7 +48,7 @@ function apply_segmentation(slide_info::Tuple{String, Vector{UInt8}, String})
 
     # weight_fn(i,j) = euclidean(segment_pixel_count(segments,i), segment_pixel_count(segments,j))
     # G, vert_map = region_adjacency_graph(segments, weight_fn)
-    filepath_seg = replace(slide_info[3], ".svs" => "_seg.tif")
+    filepath_seg = replace(slide_info[3], ".tif" => "_seg.tif")
     # filepath_seg = replace(slide_info[3], ".svs" => "_seg.tif")
     # println(G)
     # println(vert_map)
