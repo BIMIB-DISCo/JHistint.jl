@@ -44,7 +44,7 @@ function apply_segmentation(slide_info::Tuple{String, Vector{UInt8}, String})
     markers = label_components(dist .< -0.09)
     segments = watershed(dist, markers)
     println("1")
-    segmented_slide = map(i->get_random_color(i), labels_map(segments)) .* (1 .-bw)
+    # segmented_slide = map(i->get_random_color(i), labels_map(segments)) .* (1 .-bw)
 
     # weight_fn(i,j) = euclidean(segment_pixel_count(segments,i), segment_pixel_count(segments,j))
     # G, vert_map = region_adjacency_graph(segments, weight_fn)
@@ -53,6 +53,6 @@ function apply_segmentation(slide_info::Tuple{String, Vector{UInt8}, String})
     # println(G)
     # println(vert_map)
     println("1")
-    save(filepath_seg, segmented_slide)
+    save(filepath_seg, segments)
     return filepath_seg
 end
