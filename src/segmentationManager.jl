@@ -39,19 +39,20 @@ function apply_segmentation(slide_info::Tuple{String, Vector{UInt8}, String})
     img = ImageMagick.load_(svs_image)
     # imshow(img)
     println("1")
-    bw = Gray.(img) .> 0.20
+    bw = Gray.(img) .> 0.21
     dist = 1 .- distance_transform(feature_transform(bw))
-    markers = label_components(dist .< -0.3)
+    markers = label_components(dist .< -0.09)
     segments = watershed(dist, markers)
     println("1")
     segmented_slide = map(i->get_random_color(i), labels_map(segments)) .* (1 .-bw)
-    println("1")
+
     # weight_fn(i,j) = euclidean(segment_pixel_count(segments,i), segment_pixel_count(segments,j))
     # G, vert_map = region_adjacency_graph(segments, weight_fn)
     filepath_seg = replace(slide_info[3], ".svs" => "_seg.tif")
     # filepath_seg = replace(slide_info[3], ".svs" => "_seg.tif")
     # println(G)
     # println(vert_map)
+    println("1")
     save(filepath_seg, segmented_slide)
-    return filepath_seg, segmented_slide
+    return filepath_seg
 end

@@ -214,8 +214,8 @@ function slide_cell_segmentation(collection_name::AbstractString)
             println("ERROR : No match for $collection_name - collection in DB. Download the collection before.")
         else
             for record in slide_list
-                filepath_seg, segmented_slide = apply_segmentation(record)
-                load_seg_slide(filepath_seg, segmented_slide, record[1])
+                filepath_seg = apply_segmentation(record)
+                load_seg_slide(filepath_seg, record[1])
                 slide_id = record[1]
                 println("SEGMENTATION Slide Complete: SLIDE ID = $slide_id")
             end
