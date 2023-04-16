@@ -41,10 +41,11 @@ function apply_segmentation(slide_info::Tuple{String, Vector{UInt8}, String})
     println("1")
     bw = Gray.(img) .> 0.21
     dist = 1 .- distance_transform(feature_transform(bw))
-    markers = label_components(dist .< -0.09)
+    markers = label_components(dist .< -0.5)
     segments = watershed(dist, markers)
     println("1")
     # segmented_slide = map(i->get_random_color(i), labels_map(segments)) .* (1 .-bw)
+    segmented_slide = (labels_map(segments)) .* (1 .-bw)
 
     # weight_fn(i,j) = euclidean(segment_pixel_count(segments,i), segment_pixel_count(segments,j))
     # G, vert_map = region_adjacency_graph(segments, weight_fn)
