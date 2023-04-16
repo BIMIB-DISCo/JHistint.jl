@@ -13,6 +13,7 @@ using ImageMagick
 using ImageView
 using FileIO
 using Random
+using IndirectArrays
 
 # Exported Functions
 export download_single_collection
