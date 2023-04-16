@@ -55,6 +55,6 @@ function apply_segmentation(slide_info::Tuple{String, Vector{UInt8}, String})
     # println(G)
     # println(vert_map)
     println("1")
-    save(filepath_seg, segments)
+    save(filepath_seg, masked_colored_labels)
     return filepath_seg
 end
