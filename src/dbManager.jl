@@ -167,6 +167,6 @@ function load_seg_slide(filepath_seg::AbstractString, filepath_matrix::AbstractS
     stmt = SQLite.Stmt(db, "
        UPDATE Slide SET slide_path_folder_seg = ?, slide_path_folder_matrix = ?, matrix_data = ?
                           WHERE slide_ID = ?")
-    DBInterface.execute(stmt, [filepath_seg, filepath_matrix, SQLite.BLOB(matrix), slide_id])
+    DBInterface.execute(stmt, [filepath_seg, filepath_matrix, matrix, slide_id])
     SQLite.close(db)
 end

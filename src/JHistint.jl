@@ -22,7 +22,7 @@ using SimpleWeightedGraphs
 export download_single_collection
 export download_all_collection
 export slide_cell_segmentation_without_download
-export slide_cell_segmentation_with_donwload
+export slide_cell_segmentation_with_download
 
 # Included Files
 include("apiManager.jl")
@@ -187,6 +187,62 @@ function download_all_collection()
 end
 
 """
+    slide_cell_segmentation_without_download(collection_name::AbstractString)
+
+Funzione per esecuzione della segmentazione cellulare delle slide istopatologiche presenti nel database `JHistint_DB` associate al nome della collezione fornita come argomento.
+Dopo la generazione della slide segmentata la funzione procede con la costruzione e il salvataggio del rispettivo grafo e della matrice di adiacenza.
+
+# Argomenti
+- `collection_name::AbstractString` = Collezione di slide TCGA di cui effettuare la segmentazione cellulare.
+
+# Note
+Per ogni slide nel DB viene eseguita la segmentazione delle cellule utilizzando la funzione `apply_segmentation_without_download` e il percorso in cui è salvato il risultato viene memorizzato nel DB utilizzando la funzione `load_seg_slide`.
+Il processo di segmentazione è definito in 4 step:
+- LOAD SLIDE ... (slide_id)
+- APPLY SEGMENTATION ... (slide_id)
+- BUILD GRAPH ... (slide_id)
+- BUILD & SAVE ADJACENCY MATRIX ... (slide_id)
+La matrice di adiacenza viene memorizzata nello stesso percorso della immagine originale in formato testuale.
+Infine, viene stampato un messaggio di conferma per ogni slide segmentata.
+A differenza della funzione `slide_cell_segmentation_with_download` questa funzione non prevede la creazione e il download
+della immagine segmentata.
+```julia
+# Esempi con input validi
+julia> JHistint.slide_cell_segmentation_without_download("acc")
+julia> JHistint.slide_cell_segmentation_without_download("bLca")
+```
+```julia
+# Esempi con input non validi
+julia> JHistint.slide_cell_segmentation_without_download("ac")
+julia> JHistint.slide_cell_segmentation_without_download("")
+```
+"""
+function slide_cell_segmentation_without_download(collection_name::AbstractString)
+    # Check the value of the parameter
+    filepath_collection = joinpath(@__DIR__, "..", "collection", "collectionlist.jsn")
+    download_collection_values(filepath_collection)
+    collection_list = extract_collection_values(filepath_collection)
+
+    if lowercase(collection_name) in collection_list
+        collection_name = lowercase(collection_name)
+        slide_list = query_extract_slide_svs(collection_name)
+        if isempty(slide_list)
+            println("ERROR : No match for $collection_name - collection in DB. Download the collection before.")
+        else
+            for record in slide_list
+                filepath_matrix, matrix = apply_segmentation_without_download(record)
+                load_seg_slide("not saved", filepath_matrix, matrix, record[1])
+                slide_id = record[1]
+                println("SEGMENTATION SLIDE, BUILD GRAPH & MATRIX complete for SLIDE ID = $slide_id")
+            end
+        end
+    else
+        println("ERROR : $collection_name - collection not avaiable. Retry with a new collection.")
+        println("")
+    end
+end
+
+"""
     slide_cell_segmentation_with_download(collection_name::AbstractString)
 
 Funzione per esecuzione della segmentazione cellulare delle slide istopatologiche presenti nel database `JHistint_DB` associate al nome della collezione fornita come argomento.
@@ -209,13 +265,13 @@ La matrice di adiacenza viene memorizzata nello stesso percorso della immagine o
 Infine, viene stampato un messaggio di conferma per ogni slide segmentata.
 ```julia
 # Esempi con input validi
-julia> JHistint.slide_cell_segmentation("acc")
-julia> JHistint.slide_cell_segmentation("bLca")
+julia> JHistint.slide_cell_segmentation_with_download("acc")
+julia> JHistint.slide_cell_segmentation_with_download("bLca")
 ```
 ```julia
 # Esempi con input non validi
-julia> JHistint.slide_cell_segmentation("ac")
-julia> JHistint.slide_cell_segmentation("")
+julia> JHistint.slide_cell_segmentation_with_download("ac")
+julia> JHistint.slide_cell_segmentation_with_download("")
 ```
 """
 function slide_cell_segmentation_with_download(collection_name::AbstractString)
@@ -235,30 +291,7 @@ function slide_cell_segmentation_with_download(collection_name::AbstractString)
                 load_seg_slide(filepath_seg, filepath_matrix, matrix, record[1])
                 slide_id = record[1]
                 println("SEGMENTATION SLIDE, BUILD GRAPH & MATRIX complete for SLIDE ID = $slide_id")
-            end
-        end
-    else
-        println("ERROR : $collection_name - collection not avaiable. Retry with a new collection.")
-    end
-end
-
-function slide_cell_segmentation_without_download(collection_name::AbstractString)
-    # Check the value of the parameter
-    filepath_collection = joinpath(@__DIR__, "..", "collection", "collectionlist.jsn")
-    download_collection_values(filepath_collection)
-    collection_list = extract_collection_values(filepath_collection)
-
-    if lowercase(collection_name) in collection_list
-        collection_name = lowercase(collection_name)
-        slide_list = query_extract_slide_svs(collection_name)
-        if isempty(slide_list)
-            println("ERROR : No match for $collection_name - collection in DB. Download the collection before.")
-        else
-            for record in slide_list
-                filepath_matrix, matrix = apply_segmentation_without_download(record)
-                load_seg_slide("not saved", filepath_matrix, matrix, record[1])
-                slide_id = record[1]
-                println("SEGMENTATION SLIDE, BUILD GRAPH & MATRIX complete for SLIDE ID = $slide_id")
+                println("")
             end
         end
     else
