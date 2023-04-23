@@ -32,17 +32,18 @@ Dati disponibili nel database `JHistint_DB` per ogni slide:
 - `slide_ID TEXT` = Nome del singolo caso.
 - `TCGA_slideID TEXT UNIQUE` = ID utilizzato dal TCGA per identificare la slide, `UNIQUE` evita la generazione di duplicati.
 - `slide_path_folder_zip TEXT` = Percorso in cui è memorizzato il file `.zip`.
-- `slide_path_folder_svs TEXT` = Percorso in cui è memorizzato il file `.svs`.
+- `slide_path_folder_svs TEXT` = Percorso in cui è memorizzato il file `.tif`.
 - `slide_path_api TEXT` = Link alle API per il download della slide.
 - `slide_path_folder_seg TEXT` = Percorso in cui è memorizzato il file `.tif` segmentata.
 - `slide_svs BLOB` = Slide istopatologica (immagine).
-- `slide_seg BLOB` = Slide istopatologica segmentata (immagine).
 - `slide_info_TSS TEXT` = Informazioni sulla slide - Tissue Source Site.
 - `slide_info_participant_code TEXT` = Informazioni sulla slide - Codice associato al Participant, stringa alfanumerica.
 - `slide_info_sample_type TEXT` = Informazioni sulla slide - Sample Type. I valori associati ai campioni aventi tumori sono nell'intervallo 01 - 09. 10 - 19 indica l'intervallo dedicato a campioni normali non malati. 20 - 29 indica campioni attualmente sotto controllo.
 - `slide_info_vial TEXT` = Informazioni sulla slide - Vial. Relativo all'ordinamento del campione nella sequenza di campioni. I valori variano tra A - Z.
 - `slide_info_portion TEXT` = Informazioni sulla slide - Portion. Relativo all'ordinamento delle porzioni analizzate associate ad un campione. Assume valori nell'intervallo 01-99.
 - `slide_info_type TEXT` = Informazioni sulla slide - Tipo di immagine. I valori assumbili sono TS (Top Slide), BS (Bottom Slide) e MS (Middle Slide). Il valore alfanumerico indica l'ordinamento della slide.
+- `slide_path_folder_matrix TEXT` = Percorso in cui è memorizzato il file `.txt` della matrice di adiacenza.
+- `matrix_data BLOB` = Matrice di adiacenza.
 """
 function insert_record_DB(col_name::AbstractString,
                           cas_name::AbstractString,
@@ -62,9 +63,8 @@ function insert_record_DB(col_name::AbstractString,
     sample_type = sample_type_vial[1:2]
     vial = sample_type_vial[3:3]
     # Extract data from image slide
-    # filepath_svs = "C:/Users/nicom/Desktop/segmentation/TCGA-OR-A5J1-01A-01-TS1.CFE08710-54B8-45B0-86AE-500D6E36D8A5_001.svs"
+    # filepath_svs = "C:/Users/nicom/Desktop/segmentation/TCGA-OR-A5J1-01A-01-TS1.CFE08710-54B8-45B0-86AE-500D6E36D8A5_001.tif"
     svs_image = read(filepath_svs)
-    # svs_image = ImageMagick.load_(svs_image_byte)
 
     # Connect to DB
     db = SQLite.DB(joinpath(@__DIR__, "..", "JHistint_DB"))
@@ -79,13 +79,14 @@ function insert_record_DB(col_name::AbstractString,
                                         slide_path_api TEXT,
                                         slide_path_folder_seg TEXT,
                                         slide_svs BLOB,
-                                        slide_seg BLOB,
                                         slide_info_TSS TEXT,
                                         slide_info_participant_code TEXT,
                                         slide_info_sample_type TEXT,
                                         slide_info_vial TEXT,
                                         slide_info_portion TEXT,
-                                        slide_info_type TEXT)")
+                                        slide_info_type TEXT,
+                                        slide_path_folder_matrix TEXT,
+                                        matrix_data BLOB)")
      stmt = SQLite.Stmt(db, "
         INSERT OR REPLACE INTO Slide (collection_name,
                            case_name,
@@ -149,22 +150,23 @@ function query_extract_slide_svs(collection_name::AbstractString)
 end
 
 """
-    load_seg_slide(filepath_seg::AbstractString, segmented_slide::Array{ColorTypes.RGB{Float32}, 3}, slide_id::AbstractString)
+    load_seg_slide(filepath_seg::AbstractString, filepath_matrix::AbstractString, matrix::Matrix{Int64}, slide_id::AbstractString)
 
-La funzione aggiorna il `JHistint_DB` con il percorso del file dell'immagine segmentata e l'immagine segmentata.
+La funzione aggiorna il `JHistint_DB` con il percorso del file dell'immagine segmentata, il percorso
+del file con la matrice di adiacenza in formato testo e la matrice stessa.
 
 # Argomento
 - `filepath_seg::AbstractString`: Percorso del file dell'immagine segmentata da aggiungere al DB.
-- `segmented_slide::Array{ColorTypes.RGB{Float32}, 3}`: Immagine segmentata da aggiungere al DB.
+- `filepath_matrix::AbstractString`: Percorso del file della matrice di adiacenza.
+- `matrix::Matrix{Int64}`: Matrice di adiacenza.
 - `slide_id::AbstractString`: ID della slide da aggiornare con le informazioni dell'immagine segmentata.
 """
-# function load_seg_slide(filepath_seg::AbstractString, segmented_slide::Array{ColorTypes.RGB{Float32}, 3}, slide_id::AbstractString)
-function load_seg_slide(filepath_seg::AbstractString, slide_id::AbstractString)
+function load_seg_slide(filepath_seg::AbstractString, filepath_matrix::AbstractString, matrix::Matrix{Int64}, slide_id::AbstractString)
     db = SQLite.DB(joinpath(@__DIR__, "..", "JHistint_DB"))
-    seg_image = read(filepath_seg)
+    # seg_image = read(filepath_seg)
     stmt = SQLite.Stmt(db, "
-       UPDATE Slide SET slide_path_folder_seg = ?,
-                          slide_seg = ? WHERE slide_ID = ?")
-    DBInterface.execute(stmt, [filepath_seg, seg_image, slide_id])
+       UPDATE Slide SET slide_path_folder_seg = ?, slide_path_folder_matrix = ?, matrix_data = ?
+                          WHERE slide_ID = ?")
+    DBInterface.execute(stmt, [filepath_seg, filepath_matrix, SQLite.BLOB(matrix), slide_id])
     SQLite.close(db)
 end
