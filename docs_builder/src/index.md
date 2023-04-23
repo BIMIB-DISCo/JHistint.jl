@@ -86,12 +86,27 @@ download_all_collection()
 ```
 ## Funzioni Segmentazione Slides (JHistint.jl)
 ```@docs
-slide_cell_segmentation(collection_name::AbstractString)
+slide_cell_segmentation_without_download(collection_name::AbstractString)
 ```
 
+```@docs
+slide_cell_segmentation_with_download(collection_name::AbstractString)
+```
 ## Funzioni di supporto per Segmentazione (segmentationManager.jl)
 ```@docs
-apply_segmentation(slide_info::Tuple{String, Array{ColorTypes.RGB{FixedPointNumbers.N0f8}, 3}, String})
+apply_segmentation_without_download(slide_info::Tuple{String, Vector{UInt8}, String})
+```
+
+```@docs
+apply_segmentation_with_download(slide_info::Tuple{String, Vector{UInt8}, String})
+```
+
+```@docs
+save_adjacency_matrix(matrix::Matrix{Int64}, filepath_matrix::AbstractString)
+```
+
+```@docs
+weighted_graph_to_adjacency_matrix(G::SimpleWeightedGraph{Int64, Float64}, n::Int64)
 ```
 
 ```@docs
@@ -114,7 +129,7 @@ query_extract_slide_svs(collection_name::AbstractString)
 ```
 
 ```@docs
-load_seg_slide(filepath_seg::AbstractString, segmented_slide::Array{ColorTypes.RGB{Float32}, 3}, slide_id::AbstractString)
+load_seg_slide(filepath_seg::AbstractString, filepath_matrix::AbstractString, matrix::Matrix{Int64}, slide_id::AbstractString)
 ```
 
 ## Funzioni di supporto API (apiManager.jl)

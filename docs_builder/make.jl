@@ -8,9 +8,14 @@ using SQLite
 using DataFrames
 using Images
 using ImageSegmentation
+using ImageMagick
 using ImageView
 using FileIO
 using Random
+using IndirectArrays
+using Graphs
+using LightGraphs
+using SimpleWeightedGraphs
 
 makedocs(
     sitename = "JHistint Documentation",
