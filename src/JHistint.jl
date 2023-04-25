@@ -17,6 +17,7 @@ using IndirectArrays
 using Graphs
 using LightGraphs
 using SimpleWeightedGraphs
+using J_Space
 
 # Exported Functions
 export download_single_collection
@@ -234,11 +235,28 @@ function slide_cell_segmentation_without_download(collection_name::AbstractStrin
                 load_seg_slide("not saved", filepath_matrix, matrix, record[1])
                 slide_id = record[1]
                 println("SEGMENTATION SLIDE, BUILD GRAPH & MATRIX complete for SLIDE ID = $slide_id")
+                println("")
+                # J-SPACE Interface
+                filepath_file_JSPACE = replace(filepath_matrix, ".txt" => "_Files_JSpace")
+                if isdir(filepath_file_JSPACE)
+                    # do nothing
+                else
+                    mkdir(filepath_file_JSPACE) # create directory for saving J_Space files
+                end
+
+                filepath_plot_JSPACE = replace(filepath_matrix, ".txt" => "_Plots_JSpace")
+                if isdir(filepath_plot_JSPACE)
+                    # do nothing
+                else
+                    mkdir(filepath_plot_JSPACE) # create directory for saving J_Space plots
+                end
+
+                filepath_reference_JSPACE = replace(filepath_matrix, ".txt" => "_reference.fasta")
+                Start_J_Space(filepath_reference_JSPACE, filepath_matrix, filepath_file_JSPACE, filepath_plot_JSPACE, slide_id)
             end
         end
     else
         println("ERROR : $collection_name - collection not avaiable. Retry with a new collection.")
-        println("")
     end
 end
 
@@ -292,10 +310,29 @@ function slide_cell_segmentation_with_download(collection_name::AbstractString)
                 slide_id = record[1]
                 println("SEGMENTATION SLIDE, BUILD GRAPH & MATRIX complete for SLIDE ID = $slide_id")
                 println("")
+                # J-SPACE Interface
+                filepath_file_JSPACE = replace(filepath_matrix, ".txt" => "_Files_JSpace")
+                if isdir(filepath_file_JSPACE)
+                    # do nothing
+                else
+                    mkdir(filepath_file_JSPACE) # create directory for saving J_Space files
+                end
+
+                filepath_plot_JSPACE = replace(filepath_matrix, ".txt" => "_Plots_JSpace")
+                if isdir(filepath_plot_JSPACE)
+                    # do nothing
+                else
+                    mkdir(filepath_plot_JSPACE) # create directory for saving J_Space plots
+                end
+
+                filepath_reference_JSPACE = replace(filepath_matrix, ".txt" => "_reference.fasta")
+                Start_J_Space(filepath_reference_JSPACE, filepath_matrix, filepath_file_JSPACE, filepath_plot_JSPACE, slide_id)
             end
         end
     else
         println("ERROR : $collection_name - collection not avaiable. Retry with a new collection.")
     end
 end
+
+
 end
