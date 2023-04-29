@@ -104,24 +104,31 @@ function apply_segmentation_without_download(slide_info::Tuple{String, Vector{UI
     println("LOAD SLIDE ... ($slide_id)")
     img = ImageMagick.load_(svs_image)
     bw = Gray.(img) .> 0.21
-    # destroy img
+    img = nothing
     dist = 1 .- distance_transform(feature_transform(bw))
+    bw = nothing
     markers = label_components(dist .< -0.00001)
-    # destoy bw
 
     println("APPLY SEGMENTATION ... ($slide_id)")
     segments = watershed(dist, markers)
-    # destroy dist e markers
+    dist = nothing
+    markers = nothing
+    GC.gc()
 
-    println("BUILD GRAPH ... ($slide_id)")
+    println("BUILD GRAPH 1... ($slide_id)")
     weight_fn(i,j) = euclidean(segment_pixel_count(segments,i), segment_pixel_count(segments,j))
+    println("BUILD GRAPH 2... ($slide_id)")
     G, vert_map = region_adjacency_graph(segments, weight_fn)
     nvertices = length(vert_map)
-    # destroy segments, vert_map
+    vert_map = nothing
+    segments = nothing
+    GC.gc()
 
     println("BUILD & SAVE ADJACENCY MATRIX ... ($slide_id)")
     matrix = weighted_graph_to_adjacency_matrix(G, nvertices)
     filepath_matrix = replace(slide_info[3], ".tif" => ".txt")
+    G = nothing
+    nvertices = nothing
     save_adjacency_matrix(matrix, filepath_matrix)
 
     return filepath_matrix, matrix
