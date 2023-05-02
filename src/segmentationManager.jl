@@ -17,16 +17,13 @@ end
 _colon(I::CartesianIndex{N}, J::CartesianIndex{N}) where N =
     CartesianIndices(map((i,j) -> i:j, Tuple(I), Tuple(J)))
 
-function region_adjacency_graph(s::SegmentedImage, weight_fn::Function)
-    println("region_adjacency_graph 1")
+function region_adjacency_graph(s::SegmentedImage)
     function neighbor_regions!(n::Set{Int}, visited::AbstractArray, s::SegmentedImage, I::CartesianIndex)
-        println("neighbor_regions 1")
         R = CartesianIndices(axes(s.image_indexmap))
         I1 = _oneunit(CartesianIndex{ndims(visited)})
         Ibegin, Iend = first(R), last(R)
         t = Vector{CartesianIndex{ndims(visited)}}()
         push!(t, I)
-        println("neighbor_regions 2")
         while !isempty(t)
             temp = pop!(t)
             visited[temp] = true
@@ -37,7 +34,6 @@ function region_adjacency_graph(s::SegmentedImage, weight_fn::Function)
                     push!(t,J)
                 end
             end
-            println("neighbor_regions 3")
         end
         n
     end
@@ -45,25 +41,20 @@ function region_adjacency_graph(s::SegmentedImage, weight_fn::Function)
     visited  = fill(false, axes(s.image_indexmap))                           # Array to mark the pixels that are already visited
     G        = SimpleWeightedGraph()                                         # The region_adjacency_graph
     vert_map = Dict{Int,Int}()                                               # Map that stores (label, vertex) pairs
-    println("region_adjacency_graph 2")
     # add vertices to graph
     Graphs.add_vertices!(G,length(s.segment_labels))
-    println("region_adjacency_graph 3")
     # setup `vert_map`
     for (i,l) in enumerate(s.segment_labels)
         vert_map[l] = i
     end
-    println("region_adjacency_graph 4")
     # add edges to graph
     for p in CartesianIndices(axes(s.image_indexmap))
         if !visited[p]
             n = Set{Int}()
             neighbor_regions!(n, visited, s, p)
-            println("region_adjacency_graph 5")
             for i in n
-                Graphs.add_edge!(G, vert_map[s.image_indexmap[p]], vert_map[i], weight_fn(s.image_indexmap[p], i))
+                Graphs.add_edge!(G, vert_map[s.image_indexmap[p]], vert_map[i])
             end
-            println("region_adjacency_graph 6")
         end
     end
     G, vert_map
@@ -180,10 +171,9 @@ function apply_segmentation_without_download(slide_info::Tuple{String, Vector{UI
     markers = nothing
     GC.gc()
 
-    println("BUILD GRAPH 1... ($slide_id)")
-    weight_fn(i,j) = euclidean(segment_pixel_count(segments,i), segment_pixel_count(segments,j))
-    println("BUILD GRAPH 2... ($slide_id)")
-    G, vert_map = region_adjacency_graph(segments, weight_fn)
+    println("BUILD GRAPH ... ($slide_id)")
+    # weight_fn(i,j) = euclidean(segment_pixel_count(segments,i), segment_pixel_count(segments,j))
+    G, vert_map = region_adjacency_graph(segments)
     nvertices = length(vert_map)
     vert_map = nothing
     segments = nothing
