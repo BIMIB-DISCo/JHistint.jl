@@ -31,27 +31,24 @@ include("dbManager.jl")
 include("zipManager.jl")
 include("segmentationManager.jl")
 
-# Line of code to input the name of collection from command line. Not usable in Package
-# collection_name = select_collection_name(collection_list)
-
 """
     download_single_collection(collection_name::AbstractString)
 
-Funzione per il download delle slides istologiche associate ad una collezione disponibile nel TCGA.
+Function for downloading histological slides associated with a collection available in TCGA.
 
-# Argomenti
-- `collection_name::AbstractString` = Collezione di dati TCGA di cui scaricare le slides istologiche.
+# Arguments
+- `collection_name::AbstractString` = Collection of TCGA data to download the histological slides.
 
-# Note
-La funzione valuta l'argomento `collection_name`, in caso di collezione non valida considera
-la configurazione del file `Config.toml`. Il valore impostato nel package è `default`.
+# Notes
+The function evaluates the `collection_name` argument, and in case of an invalid collection, considers the configuration in the
+`Config.toml` file. The value set in the package is `default`.
 ```julia
-# Esempi con input validi
+# Examples with valid input
 julia> JHistint.download_single_collection("acc")
 julia> JHistint.download_single_collection("bLca")
 ```
 ```julia
-# Esempi con input non validi
+# Examples with invalid input
 julia> JHistint.download_single_collection("ac")
 julia> JHistint.download_single_collection("")
 ```
@@ -141,10 +138,10 @@ end
 """
     download_all_collection()
 
-Funzione per il download delle slides istologiche associate a tutte le collezioni disponbile nel TCGA.
+Function for downloading histological slides associated with all collections available in TCGA.
 
 ```julia
-# Esempi con input validi
+# Examples with valid input
 julia> JHistint.download_all_collection()
 ```
 """
@@ -190,30 +187,36 @@ end
 """
     slide_cell_segmentation_without_download(collection_name::AbstractString)
 
-Funzione per esecuzione della segmentazione cellulare delle slide istopatologiche presenti nel database `JHistint_DB` associate al nome della collezione fornita come argomento.
-Dopo la generazione della slide segmentata la funzione procede con la costruzione e il salvataggio del rispettivo grafo e della matrice di adiacenza.
+Function for performing cell segmentation on histopathological slides present in the `JHistint_DB` database associated with the
+collection name provided as an argument. After generating the segmented slide, the function proceeds with constructing and saving
+the corresponding graph and adjacency matrix.
 
-# Argomenti
-- `collection_name::AbstractString` = Collezione di slide TCGA di cui effettuare la segmentazione cellulare.
+# Arguments
+- `collection_name::AbstractString` = Collection of TCGA data to download the histological slides.
 
-# Note
-Per ogni slide nel DB viene eseguita la segmentazione delle cellule utilizzando la funzione `apply_segmentation_without_download` e il percorso in cui è salvato il risultato viene memorizzato nel DB utilizzando la funzione `load_seg_slide`.
-Il processo di segmentazione è definito in 4 step:
+# Notes
+The function utilizes the `JHistint_DB` database for performing cell segmentation on the histopathological slides associated with
+the provided collection name. It generates a segmented slide and constructs a corresponding graph and adjacency matrix.
+The output files are saved in a user-defined directory. The function may take a considerable amount of time to complete,
+depending on the size of the slides and the complexity of the segmentation algorithm.
+For each slide in the database, cell segmentation is performed using the `apply_segmentation_without_download` function,
+and the path where the result is saved is stored in the database using the `load_seg_slide` function.
+The segmentation process is defined in 4 steps:
 - LOAD SLIDE ... (slide_id)
 - APPLY SEGMENTATION ... (slide_id)
 - BUILD GRAPH ... (slide_id)
 - BUILD & SAVE ADJACENCY MATRIX ... (slide_id)
-La matrice di adiacenza viene memorizzata nello stesso percorso della immagine originale in formato testuale.
-Infine, viene stampato un messaggio di conferma per ogni slide segmentata.
-A differenza della funzione `slide_cell_segmentation_with_download` questa funzione non prevede la creazione e il download
-della immagine segmentata.
+- J-SPACE features ... (slide_id)
+The adjacency matrix is saved in the same directory as the original image in text format.
+Finally, a confirmation message is printed for each segmented slide. Unlike the `slide_cell_segmentation_with_download` function,
+this function does not involve the creation and download of the segmented image.
 ```julia
-# Esempi con input validi
+# Examples with valid input
 julia> JHistint.slide_cell_segmentation_without_download("acc")
 julia> JHistint.slide_cell_segmentation_without_download("bLca")
 ```
 ```julia
-# Esempi con input non validi
+# Examples with invalid input
 julia> JHistint.slide_cell_segmentation_without_download("ac")
 julia> JHistint.slide_cell_segmentation_without_download("")
 ```
@@ -263,31 +266,40 @@ end
 """
     slide_cell_segmentation_with_download(collection_name::AbstractString)
 
-Funzione per esecuzione della segmentazione cellulare delle slide istopatologiche presenti nel database `JHistint_DB` associate al nome della collezione fornita come argomento.
-La funzione effettua il download della slide segmentata. Il risultato viene posto nella directory in cui è presente la slide.
-Dopo la generazione della slide segmentata la funzione procede con la costruzione e il salvataggio del rispettivo grafo e della matrice di adiacenza.
+Function for performing cell segmentation on histopathological slides present in the `JHistint_DB` database associated with
+the collection name provided as an argument. The function downloads the segmented slide, which is placed in the same directory
+as the original slide. After generating the segmented slide, the function proceeds with constructing and saving the corresponding
+graph and adjacency matrix.
 
-# Argomenti
-- `collection_name::AbstractString` = Collezione di slide TCGA di cui effettuare la segmentazione cellulare.
+# Arguments
+- `collection_name::AbstractString` = TCGA data collection for which to perform cell segmentation.
 
-# Note
-Per ogni slide nel DB viene eseguita la segmentazione delle cellule utilizzando la funzione `apply_segmentation_with_download` e il percorso in cui è salvato il risultato viene memorizzato nel DB utilizzando la funzione `load_seg_slide`.
-Il processo di segmentazione è definito in 6 step:
+# Notes
+The function utilizes the `JHistint_DB` database for performing cell segmentation on the histopathological slides associated with
+the provided collection name. It generates a segmented slide and constructs a corresponding graph and adjacency matrix.
+The output files are saved in a user-defined directory. The function may take a considerable amount of time to complete,
+depending on the size of the slides and the complexity of the segmentation algorithm.
+For each slide in the database, cell segmentation is performed using the `apply_segmentation_with_download` function,
+and the path where the result is saved is stored in the database using the `load_seg_slide` function. The segmentation process
+is similar to that described in the `slide_cell_segmentation_with_download` function, with the added step of downloading
+the segmented image and placing it in the same directory as the original slide.
+The segmentation process is defined in 6 steps:
 - LOAD SLIDE ... (slide_id)
 - APPLY SEGMENTATION ... (slide_id)
 - BUILD SEGMENTED SLIDE ... (slide_id)
 - BUILD GRAPH ... (slide_id)
 - BUILD & SAVE ADJACENCY MATRIX ... (slide_id)
 - SAVE SEGMENTED SLIDE ... (slide_id)
-La matrice di adiacenza viene memorizzata nello stesso percorso della immagine originale e di quella segmentata in formato testuale.
-Infine, viene stampato un messaggio di conferma per ogni slide segmentata.
+- J-SPACE features ... (slide_id)
+The adjacency matrix is saved in text format in the same directory as both the original and segmented images.
+Finally, a confirmation message is printed for each segmented slide.
 ```julia
-# Esempi con input validi
+# Examples with valid input
 julia> JHistint.slide_cell_segmentation_with_download("acc")
 julia> JHistint.slide_cell_segmentation_with_download("bLca")
 ```
 ```julia
-# Esempi con input non validi
+# Examples with invalid input
 julia> JHistint.slide_cell_segmentation_with_download("ac")
 julia> JHistint.slide_cell_segmentation_with_download("")
 ```
@@ -333,6 +345,4 @@ function slide_cell_segmentation_with_download(collection_name::AbstractString)
         println("ERROR : $collection_name - collection not avaiable. Retry with a new collection.")
     end
 end
-
-
 end

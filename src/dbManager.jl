@@ -12,38 +12,40 @@ export load_seg_slide
                           filepath_zip::AbstractString,
                           filepath_svs::AbstractString)
 
-Funzione per la memorizzazione nel database `JHistint_DB` delle informazioni associate ad ogni slide scaricata dal CDSA.
+Function for storing in the `JHistint_DB` database the information associated with each slide downloaded from the Cancer Digital Slide Archive (CDSA).
 
 # Argomenti
-- `col_name::AbstractString` = Nome della collezione.
-- `cas_name::AbstractString` = Nome del caso, coincide con il `CASE-NAME` stampato a video dal package.
-- `tcga_case_id::AbstractString` = ID utilizzato dal TCGA per identificare il caso.
-- `sin_cas_name::AbstractString` = Nome del singolo caso, coincide con lo `SLIDE-ID` stampato a video dal package.
-- `tcga_slide_id::AbstractString` = ID utilizzato dal TCGA per identificare la slide.
-- `link_slide::AbstractString` = Link alle API per il download della slide.
-- `filepath_zip::AbstractString` = Percorso in cui è memorizzato il file `.zip`.
-- `filepath_svs::AbstractString` = Percorso in cui è memorizzato il file `.svs`.
+- `col_name::AbstractString` = Collection name.
+- `cas_name::AbstractString` = Case name, which corresponds to the `CASE-NAME` displayed by the package.
+- `tcga_case_id::AbstractString` = ID used by TCGA to identify the case.
+- `sin_cas_name::AbstractString` = Name of the individual slide, which corresponds to the `SLIDE-ID` displayed by the package.
+- `tcga_slide_id::AbstractString` = ID used by TCGA to identify the slide.
+- `link_slide::AbstractString` = Link to the APIs for downloading the slide.
+- `filepath_zip::AbstractString` = Path where the `.zip` file is stored.
+- `filepath_svs::AbstractString` = Path where the `.tif` file is stored.
 
-# Note
-Dati disponibili nel database `JHistint_DB` per ogni slide:
-- `collection_name TEXT` = Nome della collezione.
-- `case_name TEXT` = Nome del caso.
-- `TCGA_caseID TEXT` = ID utilizzato dal TCGA per identificare il caso.
-- `slide_ID TEXT` = Nome del singolo caso.
-- `TCGA_slideID TEXT UNIQUE` = ID utilizzato dal TCGA per identificare la slide, `UNIQUE` evita la generazione di duplicati.
-- `slide_path_folder_zip TEXT` = Percorso in cui è memorizzato il file `.zip`.
-- `slide_path_folder_svs TEXT` = Percorso in cui è memorizzato il file `.tif`.
-- `slide_path_api TEXT` = Link alle API per il download della slide.
-- `slide_path_folder_seg TEXT` = Percorso in cui è memorizzato il file `.tif` segmentata.
-- `slide_svs BLOB` = Slide istopatologica (immagine).
-- `slide_info_TSS TEXT` = Informazioni sulla slide - Tissue Source Site.
-- `slide_info_participant_code TEXT` = Informazioni sulla slide - Codice associato al Participant, stringa alfanumerica.
-- `slide_info_sample_type TEXT` = Informazioni sulla slide - Sample Type. I valori associati ai campioni aventi tumori sono nell'intervallo 01 - 09. 10 - 19 indica l'intervallo dedicato a campioni normali non malati. 20 - 29 indica campioni attualmente sotto controllo.
-- `slide_info_vial TEXT` = Informazioni sulla slide - Vial. Relativo all'ordinamento del campione nella sequenza di campioni. I valori variano tra A - Z.
-- `slide_info_portion TEXT` = Informazioni sulla slide - Portion. Relativo all'ordinamento delle porzioni analizzate associate ad un campione. Assume valori nell'intervallo 01-99.
-- `slide_info_type TEXT` = Informazioni sulla slide - Tipo di immagine. I valori assumbili sono TS (Top Slide), BS (Bottom Slide) e MS (Middle Slide). Il valore alfanumerico indica l'ordinamento della slide.
-- `slide_path_folder_matrix TEXT` = Percorso in cui è memorizzato il file `.txt` della matrice di adiacenza.
-- `matrix_data BLOB` = Matrice di adiacenza.
+# Notes
+The `JHistint_DB` database is used for storing the information associated with each slide downloaded from the CDSA.
+The function takes a dictionary containing the information associated with the slide and stores it in the database.
+Data available in the `JHistint_DB` database for each slide:
+- `collection_name TEXT` = Name of the collection.
+- `case_name TEXT` = Name of the case.
+- `TCGA_caseID TEXT` = ID used by TCGA to identify the case.
+- `slide_ID TEXT` = Name of the individual slide case.
+- `TCGA_slideID TEXT UNIQUE` = ID used by TCGA to identify the slide, `UNIQUE` prevents duplicates from being generated.
+- `slide_path_folder_zip TEXT` = Path where the `.zip` file is stored.
+- `slide_path_folder_svs TEXT` = Path where the `.tif` file is stored.
+- `slide_path_api TEXT` = Link to the API for downloading the slide.
+- `slide_path_folder_seg TEXT` = Path where the segmented `.tif` file is stored.
+- `slide_svs BLOB` = Histopathological slide (image).
+- `slide_info_TSS TEXT` = Slide information - Tissue Source Site.
+- `slide_info_participant_code TEXT` = Slide information - Participant Code, alphanumeric string.
+- `slide_info_sample_type TEXT` = Slide information - Sample Type. The values associated with tumor samples are in the range 01-09. 10-19 indicates the range for non-diseased normal samples. 20-29 indicates samples currently under control.
+- `slide_info_vial TEXT` = Slide information - Vial. Related to the ordering of the sample in the sequence of samples. The values range from A-Z.
+- `slide_info_portion TEXT` = Slide information - Portion. Related to the ordering of the analyzed portions associated with a sample. Takes values in the range 01-99.
+- `slide_info_type TEXT` = Slide information - Image Type. The possible values are TS (Top Slide), BS (Bottom Slide), and MS (Middle Slide). The alphanumeric value indicates the ordering of the slide.
+- `slide_path_folder_matrix TEXT` = Path where the adjacency matrix `.txt` file is stored.
+- `matrix_data BLOB` = Adjacency matrix.
 """
 function insert_record_DB(col_name::AbstractString,
                           cas_name::AbstractString,
@@ -126,13 +128,13 @@ end
 """
     query_extract_slide_svs(collection_name::AbstractString)
 
-La funzione interroga il `JHistint_DB` ed estrae la lista di slide associate al nome della collezione fornita come argomento.
+The function queries the `JHistint_DB` and extracts the list of slides associated with the collection name provided as an argument.
 
-# Argomenti
-- `collection_name::AbstractString`: Nome della collezione di slide da ricercare nel `JHistint_DB`.
+# Arguments
+- `collection_name::AbstractString`: Name of the slide collection to search for in the `JHistint_DB`.
 
-# Valore di ritorno
-- `slide_list`: Lista di tuple, ognuna delle quali contiene l'ID della slide, il file `.svs` della slide e il percorso della cartella contenente il file `.svs`.
+# Return value
+- `slide_list`: List of tuples, each of which contains the ID of the slide, the `.svs` file of the slide, and the path of the folder containing the `.svs` file.
 """
 function query_extract_slide_svs(collection_name::AbstractString)
     db = SQLite.DB(joinpath(@__DIR__, "..", "JHistint_DB"))
@@ -152,14 +154,13 @@ end
 """
     load_seg_slide(filepath_seg::AbstractString, filepath_matrix::AbstractString, matrix::Matrix{Int64}, slide_id::AbstractString)
 
-La funzione aggiorna il `JHistint_DB` con il percorso del file dell'immagine segmentata, il percorso
-del file con la matrice di adiacenza in formato testo e la matrice stessa.
+The function updates the `JHistint_DB` with the path of the segmented image file, the path of the adjacency matrix file in text format, and the matrix itself.
 
-# Argomento
-- `filepath_seg::AbstractString`: Percorso del file dell'immagine segmentata da aggiungere al DB.
-- `filepath_matrix::AbstractString`: Percorso del file della matrice di adiacenza.
-- `matrix::Matrix{Int64}`: Matrice di adiacenza.
-- `slide_id::AbstractString`: ID della slide da aggiornare con le informazioni dell'immagine segmentata.
+# Arguments
+- `filepath_seg::AbstractString`: Path of the segmented image file to add to the DB.
+- `filepath_matrix::AbstractString`: Path of the adjacency matrix file.
+- `matrix::Matrix{Int64}`: Adjacency matrix.
+- `slide_id::AbstractString`: ID of the slide to update with the segmented image information.
 """
 function load_seg_slide(filepath_seg::AbstractString, filepath_matrix::AbstractString, matrix::Matrix{Int64}, slide_id::AbstractString)
     db = SQLite.DB(joinpath(@__DIR__, "..", "JHistint_DB"))

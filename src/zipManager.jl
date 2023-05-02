@@ -3,10 +3,10 @@ export extract_slide
 """
     extract_slide(filepath_zip::AbstractString)
 
-Funzione per estrarre il contenuto dei file .zip scaricati dal CDSA.
+Function to extract the contents of `.zip` files downloaded from CDSA.
 
-# Argomenti
-- `filepath_zip::AbstractString` = Percorso in cui è salvato il file .zip relativo al singolo caso.
+# Arguments
+- `filepath_zip::AbstractString` = Path where the `.zip` file for the individual case is saved.
 """
 function extract_slide(filepath_zip::AbstractString)
     dest_path = ""

@@ -63,13 +63,13 @@ end
 """
     get_random_color(seed)
 
-Funzione per restituire un colore casuale in formato RGB a 8 bit, utilizzando un seme specificato.
+Function to return a random 8-bit RGB format color, using a specified seed.
 
-# Argomenti
-- `seed` = Un intero utilizzato per inizializzare il generatore di numeri casuali. Se due chiamate alla funzione utilizzano lo stesso seme, verrà generato lo stesso colore.
+# Arguments
+- `seed`: An integer used to initialize the random number generator. If two calls to the function use the same seed, the same color will be generated.
 
-# Valore di ritorno
-La funzione restituisce un colore casuale in formato RGB a 8 bit.
+# Return value
+The function returns a random 8-bit RGB format color.
 """
 function get_random_color(seed)
     Random.seed!(seed)
@@ -79,18 +79,18 @@ end
 """
     weighted_graph_to_adjacency_matrix(G::SimpleWeightedGraph{Int64, Float64}, n::Int64)
 
-Converte un grafo pesato rappresentato come un `SimpleWeightedGraph` in una matrice di adiacenza non pesata.
+Converts a weighted graph represented as a `SimpleWeightedGraph` into an unweighted adjacency matrix.
 
-# Argomenti:
-- `G::SimpleWeightedGraph{Int64, Float64}`: Grafo pesato rappresentato come un `SimpleWeightedGraph` con etichette di vertice intere e pesi dei bordi in virgola mobile.
-- `n::Int64`: Numero di nodi nella matrice di adiacenza.
+# Arguments:
+- `G::SimpleWeightedGraph{Int64, Float64}`: Weighted graph represented as a `SimpleWeightedGraph` with integer vertex labels and floating-point edge weights.
+- `n::Int64`: Number of nodes in the adjacency matrix.
 
-# Valore di ritorno
-- `adjacency_matrix`: matrice di adiacenza `Matrix{Int64}`.
+# Return value:
+- `adjacency_matrix`: `Matrix{Int64}` adjacency matrix.
 
-# Note
-La funzione restituisce una matrice di adiacenza di dimensioni `n` x `n` rappresentante il grafo non pesato.
-Se i nodi `i` e `j` sono adiacenti, la matrice di adiacenza conterrà un valore di `1` nella posizione `(i, j)` e `(j, i)`. Altrimenti, la matrice di adiacenza conterrà un valore di `0`.
+# Notes:
+The function returns an `n` x `n` adjacency matrix representing the unweighted graph. If nodes `i` and `j` are adjacent,
+the adjacency matrix will contain a value of `1` at position `(i,j)` and `(j,i)`. Otherwise, the adjacency matrix will contain a value of `0`.
 """
 function weighted_graph_to_adjacency_matrix(G::SimpleWeightedGraph{Int64, Float64}, n::Int64)
     adjacency_matrix = zeros(Int, n, n)
@@ -108,15 +108,15 @@ end
 """
     save_adjacency_matrix(matrix::Matrix{Int64}, filepath_matrix::AbstractString)
 
-Salva una matrice di adiacenza rappresentata come una matrice di interi su un file di testo.
+Function to save an adjacency matrix represented as an integer matrix to a text file.
 
-# Argomenti:
-- `matrix::Matrix{Int64}`: La matrice di interi che rappresenta la matrice di adiacenza.
-- `filepath_matrix::AbstractString`: Il percorso file rappresentato come una stringa che indica dove salvare la matrice.
+# Arguments:
+- `matrix::Matrix{Int64}`: The integer matrix representing the adjacency matrix.
+- `filepath_matrix::AbstractString`: The file path represented as a string indicating where to save the matrix.
 
-# Note
-La funzione apre il file specificato dal percorso `filepath_matrix` in modalità scrittura e scrive la matrice in formato di matrice di adiacenza,
-dove ogni riga rappresenta i nodi adiacenti di un nodo. I numeri nella matrice sono separati da spazi.
+# Notes
+The function opens the file specified by the `filepath_matrix` path in write mode and writes the matrix in adjacency matrix format,
+where each row represents the adjacent nodes of a node. The numbers in the matrix are separated by spaces.
 """
 function save_adjacency_matrix(matrix::Matrix{Int64}, filepath_matrix::AbstractString)
     # Open txt file
@@ -138,19 +138,17 @@ end
 """
     apply_segmentation_without_download(slide_info::Tuple{String, Vector{UInt8}, String})
 
-La funzione esegue la segmentazione di un'immagine istologica, genera il rispettivo grafo e lo traduce in una
-matrice di adiacenza simmetrica e con soli 0 e 1.
+The function performs the segmentation of a histological image, generates its corresponding graph, and translates it into a symmetric adjacency matrix with only 0s and 1s.
 
-# Argomenti
-- `slide_info::Tuple{String, Vector{UInt8}, String}`: Tupla contenente l'id della slide, l'immagine stessa ottenuta dal DB e il percorso del file dell'immagine originale.
+# Arguments
+- `slide_info::Tuple{String, Vector{UInt8}, String}`: A tuple containing the slide ID, the image obtained from the DB, and the path of the original image file.
 
-# Valori di ritorno
-- `filepath_matrix`: Il percorso all'interno del quale è memorizzata la matrice in formato `.txt`.
-- `matrix`: La matrice di adiacenza costruita dalla segmentazione.
+# Return values
+- `filepath_matrix`: The path where the adjacency matrix is stored in `.txt` format.
+- `matrix`: The adjacency matrix constructed from the segmentation.
 
-# Note
-La funzione utilizza l'algoritmo di segmentazione watershed per segmentare l'immagine in diversi raggruppamenti di pixel. La segmentazione viene eseguita utilizzando una trasformazione delle caratteristiche dell'immagine (`feature_transform`) e l'etichettatura dei componenti connessi. Viene quindi calcolata la distanza tra le diverse regioni e viene costruito un grafo di adiacenza delle regioni, utilizzando la funzione `region_adjacency_graph`.
-Il grafo ottenuto viene trasformato in una matrice di adiacenza con la funzione `weighted_graph_to_adjacency_matrix` che sarà salvata nel percorso della immagine originale.
+# Notes
+The function uses the watershed segmentation algorithm to segment the image into different groups of pixels. Segmentation is performed using a feature transformation of the image (`feature_transform`) and labeling of connected components. The distance between the different regions is then calculated, and an adjacency graph of the regions is constructed using the `region_adjacency_graph` function. The resulting graph is then transformed into an adjacency matrix using the `weighted_graph_to_adjacency_matrix` function and saved to the path of the original image.
 """
 function apply_segmentation_without_download(slide_info::Tuple{String, Vector{UInt8}, String})
     # initialization
@@ -192,21 +190,20 @@ end
 """
     apply_segmentation_with_download(slide_info::Tuple{String, Vector{UInt8}, String})
 
-La funzione esegue la segmentazione di un'immagine istologica, salva l'immagine segmentata in formato `.tif`,
-genera il rispettivo grafo e lo traduce in una matrice di adiacenza.
+The function performs segmentation of a histological image, saves the segmented image in `.tif` format, generates the corresponding graph, and translates it into an adjacency matrix.
 
-# Argomenti
-- `slide_info::Tuple{String, Vector{UInt8}, String}`: Tupla contenente l'id della slide, l'immagine stessa ottenuta dal DB e il percorso del file dell'immagine originale.
+# Arguments
+- `slide_info::Tuple{String, Vector{UInt8}, String}`: Tuple containing the slide ID, the image itself obtained from the DB, and the path of the original image file.
 
-# Valori di ritorno
-- `filepath_seg`: Il percorso all'interno del quale è memorizzata l'immagine segmentata in formato `.tif`.
-- `filepath_matrix`: Il percorso all'interno del quale è memorizzata il grafo in formato `.txt`.
-- `matrix`: La matrice di adiacenza costruita dalla segmentazione.
+# Return values
+- `filepath_seg`: The path where the segmented image is stored in `.tif` format.
+- `filepath_matrix`: The path where the graph is stored in `.txt` format.
+- `matrix`: The adjacency matrix constructed from the segmentation.
 
-# Note
-La funzione utilizza l'algoritmo di segmentazione watershed per segmentare l'immagine in diversi raggruppamenti di pixel. La segmentazione viene eseguita utilizzando una trasformazione delle caratteristiche dell'immagine (`feature_transform`) e l'etichettatura dei componenti connessi. Viene quindi calcolata la distanza tra le diverse regioni e viene costruito un grafo di adiacenza delle regioni, utilizzando la funzione `region_adjacency_graph`.
-Il grafo ottenuto viene trasformato in una matrice di adiacenza con la funzione `weighted_graph_to_adjacency_matrix` che sarà salvata nel percorso della immagine originale.
-Infine, viene salvata un'immagine `.tif` segmentata e viene restituito il percorso del file della slide segmentata.
+# Notes
+The function uses the watershed segmentation algorithm to segment the image into different groups of pixels. Segmentation is performed using an image feature transformation (`feature_transform`) and connected component labeling. The distance between different regions is then calculated, and an adjacency graph of the regions is constructed using the `region_adjacency_graph` function.
+The obtained graph is transformed into an adjacency matrix using the `weighted_graph_to_adjacency_matrix` function, which is saved in the path of the original image.
+Finally, a segmented `.tif` image is saved, and the path of the segmented slide file is returned.
 """
 function apply_segmentation_with_download(slide_info::Tuple{String, Vector{UInt8}, String})
     # initialization

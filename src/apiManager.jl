@@ -8,13 +8,15 @@ export getCasesForProject
 """
     download_collection_values(filepath::AbstractString)
 
-Funzione per il download dei dati delle collezioni disponibili nel TCGA.
+Function for downloading data from collections available in TCGA.
 
-# Argomenti
-- `filepath::AbstractString` = Percorso in cui salvare il file .json ottenuto dalle API disponibili nel CDSA.
+# Arguments
+- `filepath::AbstractString` = Path where to save the obtained `.json` file from the API available in CDSA.
 
-# Note
-L'API richiede la definizione del `parentType` e del `parentId`. Il `parentId` specifica l'identificativo della collezione. La collezione di immagini associate al TCGA è identificata dal codice: `5b9ef8e3e62914002e454c39`. L'utilizzo del `limit=0` imposta l'assenza di limiti nel file interrogato, garantendo il download del file in modo completo. L'API appartiene alla categoria per gestire le folder memorizzate nel repository. Il file scaricato è `.json`.
+# Notes
+The API requires the definition of `parentType` and `parentId`. `parentId` specifies the identifier of the collection. The collection of images associated with TCGA is identified by the code:
+`5b9ef8e3e62914002e454c39`. The use of `limit=0` sets the absence of limits in the queried file, ensuring the complete download of the file. The API belongs to the category for managing the folders
+stored in the repository. The downloaded file is `.json`.
 """
 function download_collection_values(filepath::AbstractString)
     # ID for TCGA Collection
@@ -34,13 +36,13 @@ end
 """
     extract_collection_values(filepath::AbstractString)
 
-Funzione per estrarre i valori delle collezioni di dati dal file `.json` scaricato dalla funzione `download_collection_values`.
+Function to extract the values of data collections from the `.json` file downloaded by the `download_collection_values` function.
 
-# Argomenti
-- `filepath::AbstractString` = Percorso in cui è memorizzato il file `collectionlist.json`.
+# Arguments
+- `filepath::AbstractString` = Path where the `collectionlist.json` file is stored.
 
-# Valore di ritorno
-- `collection_values::Array{String}` = Lista di collezioni di dati disponibili nel TCGA.
+# Return value
+- `collection_values::Array{String}` = List of data collections available in TCGA.
 """
 function extract_collection_values(filepath::AbstractString)
     # Read the collection file and insert into a list the data of the collection
@@ -82,15 +84,16 @@ end
 """
     download_project_infos(filepath::AbstractString, collection_name::AbstractString)
 
-Funzione per il download dei metadati associati alla collezione selezionata all'avvio.
+Function to download metadata associated with the selected collection at startup.
 
-# Argomenti
-- `filepath::AbstractString` = Percorso in cui salvare il file `.json` associato alla collezione. Il file è indicato
-con la dicitura `collection_name.json`.
-- `collection_name::AbstractString` = Nome della collezione di cui scaricare le slides.
+# Arguments
+- `filepath::AbstractString` = Path to save the `.json` file associated with the collection. The file is indicated
+with the wording `collection_name.json`.
+- `collection_name::AbstractString` = Name of the collection from which to download the slides.
 
-# Note
-L'API richiede la definizione del `parentType`, del `parentId` e del `name`. L'attributo `name` identifica il nome della collezione di cui si desidera prelevare i dati (esempio: chol, esca, etc.). L'API appartiene alla categoria per gestire le folder memorizzate nel repository. Il file scaricato è `.json`.
+# Notes
+The API requires the definition of `parentType`, `parentId`, and `name`. The `name` attribute identifies the name of the collection from which you want to retrieve data (e.g., chol, esca, etc.).
+The API belongs to the category for managing the folders stored in the repository. The downloaded file is `.json`.
 """
 function download_project_infos(filepath::AbstractString, collection_name::AbstractString)
     # Download project file as JSON file from the server
@@ -108,13 +111,13 @@ end
 """
     extract_project_id(filepath::AbstractString)
 
-Funzione per estrarre il valore del `id` dai metadati della collezione selezionata all'avvio.
+Function to extract the `id` value from the metadata of the collection selected at startup.
 
-# Argomenti
-- `filepath::AbstractString` =  Percorso in cui è memorizzato il file `collection_name.json`.
+# Arguments
+- `filepath::AbstractString` = Path where the `collection_name.json` file is stored.
 
-# Valori di ritorno
-- `project_id` =  `id` della collezione.
+# Return value
+- `project_id` = `id` of the collection.
 """
 function extract_project_id(filepath::AbstractString)
     # Read the project info file and insert into a variable the data of the project ID
@@ -135,19 +138,19 @@ end
 """
     getCasesForProject(filepath_case::AbstractString, project_id::AbstractString)
 
-Funzione per il download dei metadati associati ai casi della collezione selezionata all'avvio.
+Function to download metadata associated with the cases of the selected collection at startup.
 
-# Argomenti
-- `filepath::AbstractString` =  Percorso in cui salvare il file `.json` associato ai casi della collezione. Il file è indicato
-con la dicitura `collection_name.json`.
-- `project_id::AbstractString` =  `id` della collezione.
+# Arguments
+- `filepath::AbstractString` = Path where to save the `.json` file associated with the cases of the collection. The file is indicated with the term `collection_name.json`.
+- `project_id::AbstractString` = `id` of the collection.
 
-# Valori di ritorno
-- `casesID_values` =  Lista di `id` di tutti i casi della collezione.
-- `casesNAME_values` = Lista di `name` di tutti i casi della collezione.
+# Return values
+- `casesID_values` = List of `id` of all the cases in the collection.
+- `casesNAME_values` = List of `name` of all the cases in the collection.
 
-# Note
-L'API richiede la definizione del `parentType` e del `parentId`. L'attributo `parentType` è impostato a `folder` data la struttura del repository. Il `parentId` è configurato definendo l'identificativo della collezione scelta. Il file scaricato è `.json`.
+# Notes
+The API requires the definition of `parentType` and `parentId`. The `parentType` attribute is set to `folder` given the structure of the repository.
+The `parentId` is set by defining the identifier of the chosen collection. The downloaded file is `.json`.
 """
 function getCasesForProject(filepath_case::AbstractString, project_id::AbstractString)
     # Download case file as JSON file from the server
@@ -181,11 +184,11 @@ end
 """
     download_zip(link::AbstractString, filepath::AbstractString)
 
-Funzione per il download delle slides istologiche in formato `.zip` associate ai casi della collezione selezionata all'avvio.
+Function for downloading histological slides in `.zip` format associated with the cases of the selected collection at startup.
 
-# Argomenti
-- `link::AbstractString` = URL per l'accesso alla API per il download delle slides.
-- `filepath::AbstractString` =  Percorso in cui salvare il file `.zip`.
+# Arguments
+- `link::AbstractString` = URL to access the API for slide download.
+- `filepath::AbstractString` = Path to save the `.zip` file.
 """
 function download_zip(link::AbstractString, filepath::AbstractString)
     response = HTTP.get(link)
