@@ -1,33 +1,33 @@
 # JHistint.jl - Julia Histopathology Interface
 
-Interfaccia Julia per implementazione delle REST API disponibili sul portale CDSA (Cancer Slide Digital Archive) per il download di immagini istologiche reperibili nel TCGA (The Cancer Genome Atlas). Il Cancer Slide Digital Archive (CDSA) è una piattaforma web per il supporto, la condivisione e l'analisi di dati patologici digitali. Attualmente ospita oltre 23.000 immagini associate ai dati disponibili nel «The Cancer Genome Atlas» Data Portal.  
+Julia interface for implementing the REST APIs available on the Cancer Slide Digital Archive (CDSA) portal for downloading histological images available in The Cancer Genome Atlas (TCGA). The Cancer Slide Digital Archive (CDSA) is a web platform for support, sharing, and analysis of digital pathological data. Currently, it hosts over 23,000 images associated with the data available on "The Cancer Genome Atlas" Data Portal. The library includes functions for managing image-processing algorithms for cell segmentation, constructing the adjacency matrix, and interfacing with the J-Space.jl package.
 
-Link d'accesso al CDSA: [Clicca qui](https://api.digitalslidearchive.org/#collections)    
+CDSA Portal: [Clicca qui](https://api.digitalslidearchive.org/#collections)    
 
-Link repository contenente i dati mappati nel portale: [Clicca qui](https://cancer.digitalslidearchive.org/#!/CDSA/acc/TCGA-OR-A5J1)
+Repository containing the data mapped in the portal: [Clicca qui](https://cancer.digitalslidearchive.org/#!/CDSA/acc/TCGA-OR-A5J1)
 
-Link guida all'utilizzo delle API: [Clicca qui](https://api.digitalslidearchive.org/api/v1)
+Guide to using the APIs: [Clicca qui](https://api.digitalslidearchive.org/api/v1)
 
-## Struttura del Package
-* Le folder `case` e `collection` memorizzano in formato `.json` i metadati relativi ai singoli casi e alle collezioni disponibili nel TCGA Data Portal. La folder `collection` è composta come segue:  
-  * `collectionlist.jsn` = Memorizza i dati d'accesso (metadati) delle collezioni (Project in TCGA).  
-  * `colletion_name.jsn` = Memorizza i dati d'accesso (metadati) relativi alla singola collezione. Il file `.json` viene generato in base alla collezione scelta dall'utente.
-* La folder `case` è composta come segue:
-  * `collection_name.jsn` = Memorizza tutti i metadati relativi ai casi associati alla collezione selezionata dall'utente.  
-* La folder `slides` memorizza le immagini istologiche relative ai singoli casi. Le immagini sono organizzate in base al formato (`.svs`), alla collezione (`TCGA-chol`, `TCGA-esca`, etc.) e al singolo caso da analizzare (`TCGA-2H-A9GF`, `TCGA-2H-A9GG`, etc.). All'interno di ogni folder relativa al caso sono memorizzate le slide compresse in file `.zip`. Il formato delle singole slide è .svs. La denominazione delle folder inerenti ai casi coincide con i valori del campo `Case ID` riportato nel TCGA Data Portal. La denominazione dei file `.zip` situati in ogni folder fa riferimento all'attributo `Sample ID` associato al paziente. La denominazione della slide è data dalla concatenazione degli attributi `Slide ID` e `Slide UUID` consultabili nella sezione inferiore della pagina web dedicata al caso generico `TCGA-XX-YYYY`.
+## Package Structure
+* The `case` and `collection` folders store metadata in `.json` format for individual cases and collections available on the TCGA Data Portal. The `collection` folder is structured as follows:
+  * `collectionlist.json` = Stores access data (metadata) for collections (Projects in TCGA).
+  * `collection_name.json` = Stores access data (metadata) for a single collection. The `.json` file is generated based on the collection chosen by the user.
+* The `case` folder is structured as follows:
+  * `collection_name.json` = Stores all metadata related to cases associated with the collection selected by the user.
+* The `slides` folder stores histological images related to individual cases. The images are organized based on collection (`TCGA-chol`, `TCGA-esca`, etc.), and the individual case being analyzed (`TCGA-2H-A9GF`, `TCGA-2H-A9GG`, etc.). Within each folder related to the case, the slides are stored in compressed `.zip` files. The format of each individual slide is `.tif`. The folder names related to the cases correspond to the values of the `Case ID` field listed in the TCGA Data Portal. The names of the `.zip` files located in each folder refer to the `Sample ID` attribute associated with the patient. The slide name is given by concatenating the `Slide ID` and `Slide UUID` attributes that can be found in the lower section of the web page dedicated to the generic case `TCGA-XX-YYYY`.
 
 ```
-Esempio: TCGA-02-0001-01C-01-TS1.zip  
-  - 02 = si riferisce al TSS (Tissue Source Site).  
-  - 0001 = si riferisce al codice associato al Participant, stringa alfanumerica.  
-  - 01 = si riferisce al Sample Type. I valori associati ai campioni aventi tumori sono nell'intervallo 01 - 09. 10 - 19 indica l'intervallo dedicato a campioni normali non malati. 20 - 29 indica campioni attualmente sotto controllo.  
-  - C = si riferisce al campo Vial relativo all'ordinamento del campione nella sequenza di campioni. I valori variano tra A - Z.  
-  - 01 = si riferisce al campo Portion relativo all'ordinamento delle porzioni analizzate associate ad un campione. Assume valori nell'intervallo 01-99.  
-  - TS1 = si riferisce al campo Slide relativo al tipo di immagine. I valori assumbili sono TS (Top Slide), BS (Bottom Slide) e MS (Middle Slide). Il valore alfanumerico indica l'ordinamento della slide.
+Example: TCGA-02-0001-01C-01-TS1.zip  
+  - 02 = refers to the TSS (Tissue Source Site).  
+  - 0001 = refers to the code associated with the Participant, an alphanumeric string.  
+  - 01 = refers to the Sample Type. The values associated with tumor samples are in the range 01-09. 10-19 indicates the range for non-diseased normal samples. 20-29 indicates samples currently under control.  
+  - C = refers to the Vial field related to the ordering of the sample in the sample sequence. Values range from A-Z.  
+  - 01 = refers to the Portion field related to the ordering of the analyzed portions associated with a sample. It takes values in the range 01-99.  
+  - TS1 = refers to the Slide field related to the type of image. The values that can be assumed are TS (Top Slide), BS (Bottom Slide), and MS (Middle Slide). The alphanumeric value indicates the slide ordering.
 ```
 
-## Collezioni JHistint 
-Le collezioni disponibili sono:  
+## JHistint Collections
+The available collections are:
   * TCGA-BRCA = Breast Invasive Carcinoma (Breast)
   * TCGA-OV = Ovarian Serous Cystadenocarcinoma (Ovary)
   * TCGA-LUAD = Lung Adenocarcinoma (Bronchus and Lung)
@@ -59,37 +59,33 @@ Le collezioni disponibili sono:
   * TCGA-KICH = Kidney Chromophobe (Kidney)
   * TCGA-UCS = Uterine Carcinosarcoma (Uterus, NOS)
   * TCGA-CHOL = Cholangiocarcinoma (Liver and intrahepatic bile ducts, Other and unspecified part of biliary track)
-  * TCGA-DLBC = Lymphoid Neoplasm Diffuse Large B-cell Lymphoma (Various)  
+  * TCGA-DLBC = Lymphoid Neoplasm Diffuse Large B-cell Lymphoma (Various)
+To download a specific collection, just indicate the name of the collection: `BRCA`, `OV`, `LUAD`.
 
-Per il download di una collezione specifica è sufficiente indicare il nome della collezione: `BRCA`, `OV`, `LUAD`.
-
-## API
-Di seguito le API utilizzate nel progetto:
-* Per interrogare il repository in merito alle collezioni di dati per il quale sono disponibili slides istologiche nel TCGA viene utilizzato il seguente URL:  
+## APIs
+Below are the APIs used in the project:
+* The following URL is used to query the repository for the data collections for which histological slides are available in TCGA:  
 https://api.digitalslidearchive.org/api/v1/folder?parentType=collection&parentId=$idTCGA&limit=0&sort=lowerName&sortdir=1  
-L'URL richiede la definizione del `parentType` e del `parentId`. Il `parentId` specifica l'identificativo della collezione. La collezione di immagini associate al TCGA è identificata dal codice: `5b9ef8e3e62914002e454c39`. L'utilizzo del `limit=0` imposta l'assenza di limiti nel file interrogato, garantendo il downlod del file in modo completo. L'API appartiene alla categoria per gestire le folder memorizzate nel repository. Il file scaricato è `.json`.  
-* Per interrogare il repository e scaricare i metadati associati alla collezione scelta viene utilizzata la seguente URL:  
+The URL requires the definition of `parentType` and `parentId`. The `parentId` specifies the identifier of the collection. The image collection associated with TCGA is identified by the code: `5b9ef8e3e62914002e454c39`. The use of `limit=0` sets no limits on the queried file, ensuring the complete download of the file. The API belongs to the category for managing folders stored in the repository. The downloaded file is `.json`.  
+* The following URL is used to query the repository and download the metadata associated with the chosen collection:  
 https://api.digitalslidearchive.org/api/v1/folder?parentType=collection&parentId=5b9ef8e3e62914002e454c39&name=$collection_name&sort=lowerName&sortdir=1  
-L'URL richiede la definizione del `parentType`, del `parentId` e del `name`. L'attributo `name` identifica il nome della collezione di cui si desidera prelevare i dati (esempio: `chol`, `esca`, etc.). L'API appartiene alla categoria per gestire le folder memorizzate nel repository. Il file scaricato è `.json`.  
-* Per interrogare il repository e risalire alle informazioni dei singoli casi viene utilizzato il seguente URL:  
+The URL requires the definition of `parentType`, `parentId`, and `name`. The `name` attribute identifies the name of the collection from which you want to retrieve data (e.g. `chol`, `esca`, etc.). The API belongs to the category for managing folders stored in the repository. The downloaded file is `.json`.  
+* The following URL is used to query the repository and obtain information about individual cases:  
 https://api.digitalslidearchive.org/api/v1/folder?parentType=folder&parentId=$project_id&limit=0&sort=lowerName&sortdir=1  
-L'URL richiede la definizione del `parentType` e del `parentId`. Diversamente dalla prima API, l'attributo `parentType` è impostato a `folder` data la struttura del repository. Il `parentId` è configurato definendo l'identificativo della collezione scelta. Il file scaricato è `.json`.  
-* Per interrogare il repository e scaricare la slide corrispondente all'identificativo viene utilizzato il seguente URL:  
+The URL requires the definition of `parentType` and `parentId`. Unlike the first API, the `parentType` attribute is set to `folder` due to the repository structure. The `parentId` is configured by defining the identifier of the chosen collection. The downloaded file is `.json`.  
+* The following URL is used to query the repository and download the slide corresponding to the identifier:  
 https://api.digitalslidearchive.org/api/v1/folder/$x/download  
-L'URL consente di scaricare una folder in formato `.zip`. Il download viene effettuato in base all'identificativo della folder.  
-  
-Per ulteriori informazioni e creazione automatica degli URL consultare la seguente guida: https://api.digitalslidearchive.org/api/v1.  
+The URL allows you to download a folder in `.zip` format. The download is based on the identifier of the folder.
 
-## Installazione del Package
-Il package `JHistint` è disponibile nei Julia Registries, quindi installabile come segue:
+## Package Installation
+The `JHistint` package is available in the Julia Registries and can be installed as follows:
 ```
 julia > using Pkg
 julia > Pkg.add("JHistint")
 julia > using JHistint
 ```
-In alternativa, digitare `]` nel Julia REPL ed eseguire:
+Otherwise, type `]` in the Julia REPL and execute:
 ```
 (@v1.8) pkg > add JHistint
 (@v1.8) pkg > using JHistint
-```   
-
+```
