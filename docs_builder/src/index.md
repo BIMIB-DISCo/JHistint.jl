@@ -1,35 +1,37 @@
 # JHistint.jl - Julia Histopathology Interface
 
-Interfaccia Julia per implementazione delle REST API disponibili sul portale CDSA (Cancer Slide Digital Archive) per il download di immagini istologiche reperibili nel TCGA (The Cancer Genome Atlas). Il Cancer Slide Digital Archive (CDSA) è una piattaforma web per il supporto, la condivisione e l'analisi di dati patologici digitali. Attualmente ospita oltre 23.000 immagini associate ai dati disponibili nel «The Cancer Genome Atlas» Data Portal.  
+Julia interface for implementing the REST APIs available on the Cancer Slide Digital Archive (CDSA) portal for downloading histological images available in The Cancer Genome Atlas (TCGA). The Cancer Slide Digital Archive (CDSA) is a web platform for support, sharing, and analysis of digital pathological data. Currently, it hosts over 23,000 images associated with the data available on "The Cancer Genome Atlas" Data Portal. The library includes functions for managing image-processing algorithms for cell segmentation, constructing the adjacency matrix, and interfacing with the J-Space.jl package.
 
 Link GitHub repository: [JHistint.jl](https://github.com/niccolo99mandelli/JHistint.jl)
 
-Link d'accesso al CDSA: [Clicca qui](https://api.digitalslidearchive.org/#collections)    
+Link GitHub repository: [J-Space.jl](https://github.com/niccolo99mandelli/J-Space.jl)
 
-Link repository contenente i dati mappati nel portale: [Clicca qui](https://cancer.digitalslidearchive.org/#!/CDSA/acc/TCGA-OR-A5J1)
+CDSA Portal: [Clicca qui](https://api.digitalslidearchive.org/#collections)    
 
-Link guida all'utilizzo delle API: [Clicca qui](https://api.digitalslidearchive.org/api/v1)
+Repository containing the data mapped in the portal: [Clicca qui](https://cancer.digitalslidearchive.org/#!/CDSA/acc/TCGA-OR-A5J1)
 
-## Struttura del Package
-* Le folder `case` e `collection` memorizzano in formato `.json` i metadati relativi ai singoli casi e alle collezioni disponibili nel TCGA Data Portal. La folder `collection` è composta come segue:  
-  * `collectionlist.jsn` = Memorizza i dati d'accesso (metadati) delle collezioni (Project in TCGA).  
-  * `colletion_name.jsn` = Memorizza i dati d'accesso (metadati) relativi alla singola collezione. Il file `.json` viene generato in base alla collezione scelta dall'utente.
-* La folder `case` è composta come segue:
-  * `collection_name.jsn` = Memorizza tutti i metadati relativi ai casi associati alla collezione selezionata dall'utente.  
-* La folder `slides` memorizza le immagini istologiche relative ai singoli casi. Le immagini sono organizzate in base al formato (`.svs`), alla collezione (`TCGA-chol`, `TCGA-esca`, etc.) e al singolo caso da analizzare (`TCGA-2H-A9GF`, `TCGA-2H-A9GG`, etc.). All'interno di ogni folder relativa al caso sono memorizzate le slide compresse in file `.zip`. Il formato delle singole slide è .svs. La denominazione delle folder inerenti ai casi coincide con i valori del campo `Case ID` riportato nel TCGA Data Portal. La denominazione dei file `.zip` situati in ogni folder fa riferimento all'attributo `Sample ID` associato al paziente. La denominazione della slide è data dalla concatenazione degli attributi `Slide ID` e `Slide UUID` consultabili nella sezione inferiore della pagina web dedicata al caso generico `TCGA-XX-YYYY`.
+Guide to using the APIs: [Clicca qui](https://api.digitalslidearchive.org/api/v1)
+
+## Package Structure
+* The `case` and `collection` folders store metadata in `.json` format for individual cases and collections available on the TCGA Data Portal. The `collection` folder is structured as follows:
+  * `collectionlist.json` = Stores access data (metadata) for collections (Projects in TCGA).
+  * `collection_name.json` = Stores access data (metadata) for a single collection. The `.json` file is generated based on the collection chosen by the user.
+* The `case` folder is structured as follows:
+  * `collection_name.json` = Stores all metadata related to cases associated with the collection selected by the user.
+* The `slides` folder stores histological images related to individual cases. The images are organized based on collection (`TCGA-chol`, `TCGA-esca`, etc.), and the individual case being analyzed (`TCGA-2H-A9GF`, `TCGA-2H-A9GG`, etc.). Within each folder related to the case, the slides are stored in compressed `.zip` files. The format of each individual slide is `.tif`. The folder names related to the cases correspond to the values of the `Case ID` field listed in the TCGA Data Portal. The names of the `.zip` files located in each folder refer to the `Sample ID` attribute associated with the patient. The slide name is given by concatenating the `Slide ID` and `Slide UUID` attributes that can be found in the lower section of the web page dedicated to the generic case `TCGA-XX-YYYY`.
 
 ```
-Esempio: TCGA-02-0001-01C-01-TS1.zip  
-  - 02 = si riferisce al TSS (Tissue Source Site).  
-  - 0001 = si riferisce al codice associato al Participant, stringa alfanumerica.  
-  - 01 = si riferisce al Sample Type. I valori associati ai campioni aventi tumori sono nell'intervallo 01 - 09. 10 - 19 indica l'intervallo dedicato a campioni normali non malati. 20 - 29 indica campioni attualmente sotto controllo.  
-  - C = si riferisce al campo Vial relativo all'ordinamento del campione nella sequenza di campioni. I valori variano tra A - Z.  
-  - 01 = si riferisce al campo Portion relativo all'ordinamento delle porzioni analizzate associate ad un campione. Assume valori nell'intervallo 01-99.  
-  - TS1 = si riferisce al campo Slide relativo al tipo di immagine. I valori assumbili sono TS (Top Slide), BS (Bottom Slide) e MS (Middle Slide). Il valore alfanumerico indica l'ordinamento della slide.
+Example: TCGA-02-0001-01C-01-TS1.zip  
+  - 02 = refers to the TSS (Tissue Source Site).  
+  - 0001 = refers to the code associated with the Participant, an alphanumeric string.  
+  - 01 = refers to the Sample Type. The values associated with tumor samples are in the range 01-09. 10-19 indicates the range for non-diseased normal samples. 20-29 indicates samples currently under control.  
+  - C = refers to the Vial field related to the ordering of the sample in the sample sequence. Values range from A-Z.  
+  - 01 = refers to the Portion field related to the ordering of the analyzed portions associated with a sample. It takes values in the range 01-99.  
+  - TS1 = refers to the Slide field related to the type of image. The values that can be assumed are TS (Top Slide), BS (Bottom Slide), and MS (Middle Slide). The alphanumeric value indicates the slide ordering.
 ```
 
-## Collezioni JHistint
-Le collezioni disponibili sono:  
+## JHistint Collections
+The available collections are:
   * TCGA-BRCA = Breast Invasive Carcinoma (Breast)
   * TCGA-OV = Ovarian Serous Cystadenocarcinoma (Ovary)
   * TCGA-LUAD = Lung Adenocarcinoma (Bronchus and Lung)
@@ -62,21 +64,22 @@ Le collezioni disponibili sono:
   * TCGA-UCS = Uterine Carcinosarcoma (Uterus, NOS)
   * TCGA-CHOL = Cholangiocarcinoma (Liver and intrahepatic bile ducts, Other and unspecified part of biliary track)
   * TCGA-DLBC = Lymphoid Neoplasm Diffuse Large B-cell Lymphoma (Various)
-Per il download di una collezione specifica è sufficiente indicare il nome della collezione: `BRCA`, `OV`, `LUAD`.
+To download a specific collection, just indicate the name of the collection: `BRCA`, `OV`, `LUAD`.
 
-## Installazione del Package
-Il package `JHistint` è disponibile nei Julia Registries, quindi installabile come segue:
+## Package Installation
+The `JHistint` package is available in the Julia Registries and can be installed as follows:
 ```
 julia > using Pkg
 julia > Pkg.add("JHistint")
 julia > using JHistint
 ```
-In alternativa, digitare `]` nel Julia REPL ed eseguire:
+Otherwise, type `]` in the Julia REPL and execute:
 ```
 (@v1.8) pkg > add JHistint
 (@v1.8) pkg > using JHistint
 ```
-## Funzioni Download Slides (JHistint.jl)
+
+## Download Slides functions (JHistint.jl)
 ```@docs
 download_single_collection(collection_name::AbstractString)
 ```
@@ -84,7 +87,7 @@ download_single_collection(collection_name::AbstractString)
 ```@docs
 download_all_collection()
 ```
-## Funzioni Segmentazione Slides (JHistint.jl)
+## Cell Segmentation Slides functions (JHistint.jl)
 ```@docs
 slide_cell_segmentation_without_download(collection_name::AbstractString)
 ```
@@ -92,7 +95,7 @@ slide_cell_segmentation_without_download(collection_name::AbstractString)
 ```@docs
 slide_cell_segmentation_with_download(collection_name::AbstractString)
 ```
-## Funzioni di supporto per Segmentazione (segmentationManager.jl)
+## Support Functions for Cell Segmentation (segmentationManager.jl)
 ```@docs
 apply_segmentation_without_download(slide_info::Tuple{String, Vector{UInt8}, String})
 ```
@@ -112,7 +115,7 @@ weighted_graph_to_adjacency_matrix(G::SimpleWeightedGraph{Int64, Float64}, n::In
 ```@docs
 get_random_color(seed)
 ```
-## Funzioni di supporto DB (dbManager.jl)
+## DB Support Functions (dbManager.jl)
 ```@docs
 insert_record_DB(col_name::AbstractString,
                         cas_name::AbstractString,
@@ -132,7 +135,7 @@ query_extract_slide_svs(collection_name::AbstractString)
 load_seg_slide(filepath_seg::AbstractString, filepath_matrix::AbstractString, matrix::Matrix{Int64}, slide_id::AbstractString)
 ```
 
-## Funzioni di supporto API (apiManager.jl)
+## API Support Functions (apiManager.jl)
 ```@docs
 download_collection_values(filepath::AbstractString)
 ```
@@ -157,7 +160,7 @@ getCasesForProject(filepath_case::AbstractString, project_id::AbstractString)
 download_zip(link::AbstractString, filepath::AbstractString)
 ```
 
-## Funzioni di supporto ZIP (zipManager.jl)
+## ZIP Support Functions (zipManager.jl)
 ```@docs
 extract_slide(filepath_zip::AbstractString)
 ```
