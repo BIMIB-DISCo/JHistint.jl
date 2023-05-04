@@ -6,11 +6,11 @@ Link GitHub repository: [JHistint.jl](https://github.com/niccolo99mandelli/JHist
 
 Link GitHub repository: [J-Space.jl](https://github.com/niccolo99mandelli/J-Space.jl)
 
-CDSA Portal: [Clicca qui](https://api.digitalslidearchive.org/#collections)    
+CDSA Portal: [Click Here](https://api.digitalslidearchive.org/#collections)    
 
-Repository containing the data mapped in the portal: [Clicca qui](https://cancer.digitalslidearchive.org/#!/CDSA/acc/TCGA-OR-A5J1)
+Repository containing the data mapped in the portal: [Click Here](https://cancer.digitalslidearchive.org/#!/CDSA/acc/TCGA-OR-A5J1)
 
-Guide to using the APIs: [Clicca qui](https://api.digitalslidearchive.org/api/v1)
+Guide to using the APIs: [Click Here](https://api.digitalslidearchive.org/api/v1)
 
 ## Package Structure
 * The `case` and `collection` folders store metadata in `.json` format for individual cases and collections available on the TCGA Data Portal. The `collection` folder is structured as follows:
