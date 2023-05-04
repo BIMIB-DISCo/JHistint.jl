@@ -2,11 +2,11 @@
 
 Julia interface for implementing the REST APIs available on the Cancer Slide Digital Archive (CDSA) portal for downloading histological images available in The Cancer Genome Atlas (TCGA). The Cancer Slide Digital Archive (CDSA) is a web platform for support, sharing, and analysis of digital pathological data. Currently, it hosts over 23,000 images associated with the data available on "The Cancer Genome Atlas" Data Portal. The library includes functions for managing image-processing algorithms for cell segmentation, constructing the adjacency matrix, and interfacing with the J-Space.jl package.
 
-CDSA Portal: [Clicca qui](https://api.digitalslidearchive.org/#collections)    
+CDSA Portal: [Click Here](https://api.digitalslidearchive.org/#collections)    
 
-Repository containing the data mapped in the portal: [Clicca qui](https://cancer.digitalslidearchive.org/#!/CDSA/acc/TCGA-OR-A5J1)
+Repository containing the data mapped in the portal: [Click Here](https://cancer.digitalslidearchive.org/#!/CDSA/acc/TCGA-OR-A5J1)
 
-Guide to using the APIs: [Clicca qui](https://api.digitalslidearchive.org/api/v1)
+Guide to using the APIs: [Click Here](https://api.digitalslidearchive.org/api/v1)
 
 ## Package Structure
 * The `case` and `collection` folders store metadata in `.json` format for individual cases and collections available on the TCGA Data Portal. The `collection` folder is structured as follows:
