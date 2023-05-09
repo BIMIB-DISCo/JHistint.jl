@@ -161,7 +161,7 @@ function apply_segmentation_without_download(slide_info::Tuple{String, Vector{UI
     img = nothing
     dist = 1 .- distance_transform(feature_transform(bw))
     bw = nothing
-    markers = label_components(dist .< -0.00001)
+    markers = label_components(dist .< -0.3)
 
     println("APPLY SEGMENTATION ... ($slide_id)")
     segments = watershed(dist, markers)
@@ -214,7 +214,7 @@ function apply_segmentation_with_download(slide_info::Tuple{String, Vector{UInt8
     img = ImageMagick.load_(svs_image)
     bw = Gray.(img) .> 0.21
     dist = 1 .- distance_transform(feature_transform(bw))
-    markers = label_components(dist .< -0.00001)
+    markers = label_components(dist .< -0.3)
 
     println("APPLY SEGMENTATION ... ($slide_id)")
     segments = watershed(dist, markers)
