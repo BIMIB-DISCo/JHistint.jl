@@ -50,8 +50,19 @@ function region_adjacency_graph(s::SegmentedImage)
     # add edges to graph
     for p in CartesianIndices(axes(s.image_indexmap))
         if !visited[p]
-            n = Set{Int}()
-            neighbor_regions!(n, visited, s, p)
+            try
+                n = Set{Int}()
+                GC.gc()
+                neighbor_regions!(n, visited, s, p)
+            catch oom
+                if isa(oom, OutOfMemoryError)
+                    n = Set{Int}()
+                    GC.gc()
+                    println(">>> OOM")
+                    show(p)
+                    show(s)
+                end
+            end
             for i in n
                 Graphs.add_edge!(G, vert_map[s.image_indexmap[p]], vert_map[i])
             end
