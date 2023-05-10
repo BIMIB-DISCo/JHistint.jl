@@ -53,7 +53,6 @@ function region_adjacency_graph(s::SegmentedImage)
             try
                 n = Set{Int}()
                 neighbor_regions!(n, visited, s, p)
-                GC.gc()
             catch oom
                 if isa(oom, OutOfMemoryError)
                     n = Set{Int}()
@@ -67,6 +66,7 @@ function region_adjacency_graph(s::SegmentedImage)
             for i in n
                 Graphs.add_edge!(G, vert_map[s.image_indexmap[p]], vert_map[i])
             end
+            GC.gc()
         end
     end
     G, vert_map
