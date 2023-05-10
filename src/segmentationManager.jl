@@ -52,8 +52,8 @@ function region_adjacency_graph(s::SegmentedImage)
         if !visited[p]
             try
                 n = Set{Int}()
-                GC.gc()
                 neighbor_regions!(n, visited, s, p)
+                GC.gc()
             catch oom
                 if isa(oom, OutOfMemoryError)
                     n = Set{Int}()
