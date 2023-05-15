@@ -50,9 +50,8 @@ function region_adjacency_graph(s::SegmentedImage)
     # add edges to graph
     for p in CartesianIndices(axes(s.image_indexmap))
         if !visited[p]
+            n = Set{Int}()
             try
-                n = Set{Int}()
-                GC.gc()
                 neighbor_regions!(n, visited, s, p)
             catch oom
                 if isa(oom, OutOfMemoryError)
@@ -61,11 +60,13 @@ function region_adjacency_graph(s::SegmentedImage)
                     println(">>> OOM")
                     show(p)
                     show(s)
+                    exit()
                 end
             end
             for i in n
                 Graphs.add_edge!(G, vert_map[s.image_indexmap[p]], vert_map[i])
             end
+            GC.gc()
         end
     end
     G, vert_map
@@ -172,7 +173,7 @@ function apply_segmentation_without_download(slide_info::Tuple{String, Vector{UI
     img = nothing
     dist = 1 .- distance_transform(feature_transform(bw))
     bw = nothing
-    markers = label_components(dist .< -0.3)
+    markers = label_components(dist .< -0.8)
 
     println("APPLY SEGMENTATION ... ($slide_id)")
     segments = watershed(dist, markers)
