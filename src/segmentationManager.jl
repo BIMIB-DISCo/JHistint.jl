@@ -4,6 +4,16 @@ export save_adjacency_matrix
 export apply_segmentation_without_download
 export apply_segmentation_with_download
 
+"""
+`SegmentedImage` type contains the index-label mapping, assigned labels,
+segment mean intensity and pixel count of each segment.
+struct SegmentedImage{T<:AbstractArray,U<:Union{Colorant,Real}}
+    image_indexmap::T
+    segment_labels::Vector{Int}
+    segment_means::Dict{Int,U}
+    segment_pixel_count::Dict{Int,Int}
+end
+"""
 
 @static if Base.VERSION <= v"1.0.5"
     # https://github.com/JuliaLang/julia/pull/29442
@@ -17,20 +27,50 @@ end
 _colon(I::CartesianIndex{N}, J::CartesianIndex{N}) where N =
     CartesianIndices(map((i,j) -> i:j, Tuple(I), Tuple(J)))
 
-function region_adjacency_graph(s::SegmentedImage)
+"""
+    G, vert_map = region_adjacency_graph(seg, weight_fn)
+
+Constructs a region adjacency graph (RAG) from the `SegmentedImage`. It returns the RAG
+along with a Dict(label=>vertex) map. `weight_fn` is used to assign weights to the edges.
+
+    weight_fn(label1, label2)
+
+Returns a real number corresponding to the weight of the edge between label1 and label2.
+
+"""
+function region_adjacency_graph(s::SegmentedImage, weight_fn::Function)
+
     function neighbor_regions!(n::Set{Int}, visited::AbstractArray, s::SegmentedImage, I::CartesianIndex)
+        # n = Set{Int} - visited = Array - s = segmented image - p = CartesianIndex which define neighbors
+        # R contains each possible index in s
         R = CartesianIndices(axes(s.image_indexmap))
+        # I1 contains a Vector of only 1 with dimension equal to visited
         I1 = _oneunit(CartesianIndex{ndims(visited)})
+        # Ibegin and Iend contains the first and last index of R
         Ibegin, Iend = first(R), last(R)
+        # t is only a empty Vector with dimension equal to visited
         t = Vector{CartesianIndex{ndims(visited)}}()
+        # add index I to Vector t
         push!(t, I)
+
         while !isempty(t)
+            # Extract last element of t and save it in temp
             temp = pop!(t)
+            # set index temp to true
             visited[temp] = true
+            # _colon build an object CartesianIndices which include all the index from I to J (range) :
+            # _colon(I::CartesianIndex{N}, J::CartesianIndex{N}) where N =
+            #    CartesianIndices(map((i,j) -> i:j, Tuple(I), Tuple(J)))
             for J in _colon(max(Ibegin, temp-I1), min(Iend, temp+I1))
                 if s.image_indexmap[temp] != s.image_indexmap[J]
-                    push!(n,s.image_indexmap[J])
+                    # If the values are different, it means they have two different colorings for the two points,
+                    # therefore a neighbor has been identified, which is pushed into n.
+                    # push!(n,s.image_indexmap[J])
+                    Graphs.add_edge!(G, vert_map[s.image_indexmap[I]], vert_map[s.image_indexmap[J]], weight_fn(s.image_indexmap[I], s.image_indexmap[J]))
                 elseif !visited[J]
+                    # If they are equal, I place them in t, so that,
+                    # as long as t is not empty, I can explore all the neighbors
+                    # that have the same color.
                     push!(t,J)
                 end
             end
@@ -38,35 +78,42 @@ function region_adjacency_graph(s::SegmentedImage)
         n
     end
 
-    visited  = fill(false, axes(s.image_indexmap))                           # Array to mark the pixels that are already visited
-    G        = SimpleWeightedGraph()                                         # The region_adjacency_graph
-    vert_map = Dict{Int,Int}()                                               # Map that stores (label, vertex) pairs
+    # Start
+    visited  = fill(false, axes(s.image_indexmap))  # Array to mark the pixels that are already visited
+    G        = SimpleWeightedGraph()                # The region_adjacency_graph
+    vert_map = Dict{Int,Int}()                      # Map that stores (label, vertex) pairs
+
     # add vertices to graph
     Graphs.add_vertices!(G,length(s.segment_labels))
+
     # setup `vert_map`
     for (i,l) in enumerate(s.segment_labels)
         vert_map[l] = i
     end
+
     # add edges to graph
+    # For each CartesianIndices in s where the image_indexmap represent the image wich is a Multidimensional Array
+    # The index of s.image_indexmap represent the pixel position in the segmented image
+    # The value of s.image_indexmap represent the pixel color in the segmented image
     for p in CartesianIndices(axes(s.image_indexmap))
+        # check if p of the segmented image s is not visited
         if !visited[p]
+            # initialize n, fondamental to define the neighbor of p
             n = Set{Int}()
+            # Call neighbor_regions where :
+            # n = Set{Int} - visited = Array - s = segmented image - p = CartesianIndex which define neighbors
             try
                 neighbor_regions!(n, visited, s, p)
             catch oom
                 if isa(oom, OutOfMemoryError)
-                    n = Set{Int}()
+                    # n = Set{Int}()
                     GC.gc()
                     println(">>> OOM")
-                    show(p)
-                    show(s)
                     exit()
                 end
-            end
-            for i in n
-                Graphs.add_edge!(G, vert_map[s.image_indexmap[p]], vert_map[i])
-            end
-            GC.gc()
+            # for i in n
+            #     Graphs.add_edge!(G, vert_map[s.image_indexmap[p]], vert_map[i], weight_fn(s.image_indexmap[p], i))
+            # end
         end
     end
     G, vert_map
