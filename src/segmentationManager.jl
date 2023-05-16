@@ -112,6 +112,7 @@ function region_adjacency_graph(s::SegmentedImage, weight_fn::Function)
                     println(">>> OOM")
                     exit()
                 end
+            end
             # for i in n
             #     Graphs.add_edge!(G, vert_map[s.image_indexmap[p]], vert_map[i], weight_fn(s.image_indexmap[p], i))
             # end
