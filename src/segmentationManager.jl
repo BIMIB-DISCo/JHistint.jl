@@ -73,6 +73,7 @@ function region_adjacency_graph(s::SegmentedImage, weight_fn::Function)
                     # that have the same color.
                     push!(t,J)
                 end
+                GC.gc()
             end
         end
         n
@@ -229,8 +230,8 @@ function apply_segmentation_without_download(slide_info::Tuple{String, Vector{UI
     GC.gc()
 
     println("BUILD GRAPH ... ($slide_id)")
-    # weight_fn(i,j) = euclidean(segment_pixel_count(segments,i), segment_pixel_count(segments,j))
-    G, vert_map = region_adjacency_graph(segments)
+    weight_fn(i,j) = euclidean(segment_pixel_count(segments,i), segment_pixel_count(segments,j))
+    G, vert_map = region_adjacency_graph(segments, weight_fn)
     nvertices = length(vert_map)
     vert_map = nothing
     segments = nothing
@@ -282,6 +283,7 @@ function apply_segmentation_with_download(slide_info::Tuple{String, Vector{UInt8
     labels = labels_map(segments)
     colored_labels = IndirectArray(labels, distinguishable_colors(maximum(labels)))
     masked_colored_labels = colored_labels .* (1 .- bw)
+    imshow(masked_colored_labels)
 
     println("BUILD GRAPH ... ($slide_id)")
     weight_fn(i,j) = euclidean(segment_pixel_count(segments,i), segment_pixel_count(segments,j))
