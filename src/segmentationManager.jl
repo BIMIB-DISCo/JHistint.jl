@@ -79,7 +79,7 @@ function region_adjacency_graph(s::SegmentedImage, weight_fn::Function)
                 GC.gc()
             end
         end
-        G
+        G, visited
     end
     # Start
     visited  = fill(false, axes(s.image_indexmap))  # Array to mark the pixels that are already visited
@@ -106,7 +106,7 @@ function region_adjacency_graph(s::SegmentedImage, weight_fn::Function)
             # Call neighbor_regions where :
             # n = Set{Int} - visited = Array - s = segmented image - p = CartesianIndex which define neighbors
             try
-                G = neighbor_regions!(G, visited, s, p)
+                G, visited = neighbor_regions!(G, visited, s, p)
             catch oom
                 if isa(oom, OutOfMemoryError)
                     # n = Set{Int}()
