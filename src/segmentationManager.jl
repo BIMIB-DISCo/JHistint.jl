@@ -52,7 +52,7 @@ function region_adjacency_graph(s::SegmentedImage, weight_fn::Function)
         t = Vector{CartesianIndex{ndims(visited)}}()
         # add index I to Vector t
         push!(t, I)
-        added_indices = []
+
         while !isempty(t)
             # Extract last element of t and save it in temp
             temp = pop!(t)
@@ -63,28 +63,27 @@ function region_adjacency_graph(s::SegmentedImage, weight_fn::Function)
             #    CartesianIndices(map((i,j) -> i:j, Tuple(I), Tuple(J)))
             for J in _colon(max(Ibegin, temp-I1), min(Iend, temp+I1))
                 if s.image_indexmap[temp] != s.image_indexmap[J]
-                    if s.image_indexmap[J] ∉ added_indices
+                    # if s.image_indexmap[J] ∉ n
                         # If the values are different, it means they have two different colorings for the two points,
                         # therefore a neighbor has been identified, which is pushed into n.
                         # push!(n,s.image_indexmap[J])
                         Graphs.add_edge!(G, vert_map[s.image_indexmap[I]], vert_map[s.image_indexmap[J]], weight_fn(s.image_indexmap[I], s.image_indexmap[J]))
-                        push!(added_indices, s.image_indexmap[J])
-                    end
+                        # push!(added_indices, s.image_indexmap[J])
+                        # push!(n,s.image_indexmap[J])
+                    # end
                 elseif !visited[J]
                     # If they are equal, I place them in t, so that,
                     # as long as t is not empty, I can explore all the neighbors
                     # that have the same color.
                     push!(t,J)
                 end
-                GC.gc()
             end
         end
-        G, visited
     end
     # Start
-    visited  = fill(false, axes(s.image_indexmap))  # Array to mark the pixels that are already visited
-    G        = SimpleWeightedGraph()                # The region_adjacency_graph
-    vert_map = Dict{Int,Int}()                      # Map that stores (label, vertex) pairs
+    visited  = fill(false, axes(s.image_indexmap))                           # Array to mark the pixels that are already visited
+    G        = SimpleWeightedGraph()                                         # The region_adjacency_graph
+    vert_map = Dict{Int,Int}()                                               # Map that stores (label, vertex) pairs
 
     # add vertices to graph
     Graphs.add_vertices!(G,length(s.segment_labels))
@@ -101,12 +100,11 @@ function region_adjacency_graph(s::SegmentedImage, weight_fn::Function)
     for p in CartesianIndices(axes(s.image_indexmap))
         # check if p of the segmented image s is not visited
         if !visited[p]
-            # initialize n, fondamental to define the neighbor of p
-            # n = Set{Int}()
+            # n = Set{Int16}()
             # Call neighbor_regions where :
             # n = Set{Int} - visited = Array - s = segmented image - p = CartesianIndex which define neighbors
             try
-                G, visited = neighbor_regions!(G, visited, s, p)
+                neighbor_regions!(G, visited, s, p)
             catch oom
                 if isa(oom, OutOfMemoryError)
                     # n = Set{Int}()
@@ -114,10 +112,10 @@ function region_adjacency_graph(s::SegmentedImage, weight_fn::Function)
                     println(">>> OOM")
                     exit()
                 end
-            # for i in n
-            #     Graphs.add_edge!(G, vert_map[s.image_indexmap[p]], vert_map[i], weight_fn(s.image_indexmap[p], i))
-            # end
             end
+            # for i in n
+            #    Graphs.add_edge!(G, vert_map[s.image_indexmap[p]], vert_map[i], weight_fn(s.image_indexmap[p], i))
+            # end
         end
     end
     G, vert_map

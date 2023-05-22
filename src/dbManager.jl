@@ -65,7 +65,7 @@ function insert_record_DB(col_name::AbstractString,
     sample_type = sample_type_vial[1:2]
     vial = sample_type_vial[3:3]
     # Extract data from image slide
-    filepath_svs = joinpath(@__DIR__, "..", "output_example", "example.tif")
+    # filepath_svs = joinpath(@__DIR__, "..", "output_example", "example.tif")
     svs_image = read(filepath_svs)
 
     # Connect to DB
