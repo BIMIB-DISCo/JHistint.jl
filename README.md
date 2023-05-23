@@ -117,3 +117,6 @@ The demo is structured for 3 histological slides, therefore it is sufficient to 
 ```
 julia -e  'JHistint.slide_cell_segmentation_with_download("lusc")'
 ```
+
+## Documentation
+Documentation is available on the Julia Pages at  https://niccolo99mandelli.github.io/JHistint.jl/
