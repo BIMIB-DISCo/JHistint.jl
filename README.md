@@ -102,7 +102,7 @@ If you want to access the demo output files directly without running it, they ar
 (@v1.8) pkg > add https://github.com/niccolo99mandelli/JHistint.jl.git
 ```
 `Note` : dependency error caused by unregistered package -> Need to be add to Julia Registries to resolve (in progress).
-* Activate `J-Space` package to avoid package dependency issues. From command line type:
+* Activate `J-Space` package to avoid package dependency issues. From command-line type:
 ```
 julia -e  'cd("/home/nmandelli/.julia/packages/J_Space/______/"); using Pkg; Pkg.activate("."); using J_Space;'
 ```
