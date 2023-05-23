@@ -115,7 +115,7 @@ julia -e  'cd("/home/nmandelli/.julia/packages/JHistint/______/"); using Pkg; Pk
 The demo is structured for 3 histological slides, therefore it is sufficient to interrupt the execution after downloading the first 3 slides (using `Ctrl + C`). The output will be displayed on the screen. 
 * Run function for segmentating slides in DB and creating graph, adjancency matrix. Interface with `J-Space` for Files and Plots build.
 ```
-julia -e  'JHistint.slide_cell_segmentation_with_download("lusc")'
+julia -e  'using JHistint; JHistint.slide_cell_segmentation_without_download("lusc")'
 ```
 
 ## Documentation
