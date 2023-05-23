@@ -67,11 +67,11 @@ function insert_record_DB(col_name::AbstractString,
     # Extract data from image slide
     # Setting for DEMO
     if (sin_cas_name == "TCGA-18-3406-01A-01-BS1")
-        filepath_svs = joinpath(@__DIR__, "..", "output_example", "slideExample1", "SlideExample_mini_1.tif")
+        filepath_svs = joinpath(@__DIR__, "..", "input_example_demo", "slideExample1", "SlideExample_mini_1.tif")
     elseif (sin_cas_name == "TCGA-18-3406-01A-01-TS1")
-        filepath_svs = joinpath(@__DIR__, "..", "output_example", "slideExample2", "SlideExample_mini_2.tif")
+        filepath_svs = joinpath(@__DIR__, "..", "input_example_demo", "slideExample2", "SlideExample_mini_2.tif")
     else
-        filepath_svs = joinpath(@__DIR__, "..", "output_example", "slideExample3", "SlideExample_mini_3.tif")
+        filepath_svs = joinpath(@__DIR__, "..", "input_example_demo", "slideExample3", "SlideExample_mini_3.tif")
     end
     svs_image = read(filepath_svs)
 
