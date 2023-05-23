@@ -113,7 +113,7 @@ julia -e  'cd("/home/nmandelli/.julia/packages/JHistint/______/"); using Pkg; Pk
 ```
 `Note` : "______" refers to the code given to the installed package `(JHistint)`, replace it with the code you can find in the indicated path. Make sure the path refers to the location of your package.  
 The demo is structured for 3 histological slides, therefore it is sufficient to interrupt the execution after downloading the first 3 slides (using `Ctrl + C`). The output will be displayed on the screen. 
-* Run function for segmentating slides in DB and creating graph, adjancency matrix. Interface with `J-Space` for Files and Plots build.
+* Run function for segmentating slides in DB, creating graph and build adjancency matrix. Interface with `J-Space` for Files and Plots build.
 ```
 julia -e  'using JHistint; JHistint.slide_cell_segmentation_without_download("lusc")'
 ```
