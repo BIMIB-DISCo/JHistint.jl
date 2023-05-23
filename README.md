@@ -77,7 +77,7 @@ The URL requires the definition of `parentType` and `parentId`. Unlike the first
 https://api.digitalslidearchive.org/api/v1/folder/$x/download  
 The URL allows you to download a folder in `.zip` format. The download is based on the identifier of the folder.
 
-## Package Installation
+## Package Installation (in progress)
 The `JHistint` package is available in the Julia Registries and can be installed as follows:
 ```
 julia > using Pkg
@@ -89,3 +89,31 @@ Otherwise, type `]` in the Julia REPL and execute:
 (@v1.8) pkg > add JHistint
 (@v1.8) pkg > using JHistint
 ```
+
+## Running DEMO
+* Add `J-Space` package from `niccolo99mandelli` GitHub repository. Type `]` in Julia REPL and execute:
+```
+(@v1.8) pkg > add https://github.com/niccolo99mandelli/J-Space.jl.git
+```
+* Add `JHistint` package from `niccolo99mandelli` GitHub repository. Type `]` in Julia REPL and execute:
+```
+(@v1.8) pkg > add https://github.com/niccolo99mandelli/JHistint.jl.git
+```
+Note : dependency error caused by unregistered package -> Need to be add to Julia Registries to resolve (in progress).
+* Activate `J-Space` package to avoid package dependency issues. From command line type:
+```
+julia -e  'cd("/home/nmandelli/.julia/packages/J_Space/______/"); using Pkg; Pkg.activate("."); using J_Space;'
+```
+Note : "______" refers to the code given to the installed package `(J_Space)`, replace it with the code you can find in the indicated path. Make sure the path refers to the location of your package.  
+* Activate `JHistint` package and Run function for downloading slides and populating DB:  
+```
+julia -e  'cd("/home/nmandelli/.julia/packages/JHistint/______/"); using Pkg; Pkg.activate("."); using JHistint; JHistint.download_single_collection("lusc")'
+```
+Note : "______" refers to the code given to the installed package `(JHistint)`, replace it with the code you can find in the indicated path. Make sure the path refers to the location of your package.  
+The demo is structured for 3 histological slides, therefore it is sufficient to interrupt the execution after downloading the first 3 slides (using `Ctrl + C`). The output will be displayed on the screen. 
+* Run function for segmentating slides in DB and creating graph, adjancency matrix. Interface with `J-Space` for Files and Plots build.
+```
+julia -e  'JHistint.slide_cell_segmentation_with_download("lusc")'
+```
+The input files used by the demo are available in the `input_example_demo` directory. The output files generated will also be saved in the related directory.  
+If you want to access the demo output files directly without running it, they are available in the `output_example_demo` directory.
