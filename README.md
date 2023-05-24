@@ -92,7 +92,7 @@ Otherwise, type `]` in the Julia REPL and execute:
 
 ## Running DEMO
 The input files used by the demo are available in the `input_example_demo` directory. The output files generated will also be saved in the related directory.  
-If you want to access the demo output files directly without running it, they are available in the `output_example_demo` directory.  
+If you want to access the demo output files directly without running it, they are available in the `output_example_demo` directory. Follow the steps below to start the demo: 
 * Add `J-Space` package from `niccolo99mandelli` GitHub repository. Type `]` in Julia REPL and execute:
 ```
 (@v1.8) pkg > add https://github.com/niccolo99mandelli/J-Space.jl.git
@@ -101,18 +101,18 @@ If you want to access the demo output files directly without running it, they ar
 ```
 (@v1.8) pkg > add https://github.com/niccolo99mandelli/JHistint.jl.git
 ```
-`Note` : dependency error caused by unregistered package -> Need to be add to Julia Registries to resolve (in progress).
+`Note : dependency error caused by unregistered package -> Need to be add to Julia Registries to resolve (in progress).`
 * Activate `J-Space` package to avoid package dependency issues. From command-line type:
 ```
 julia -e  'cd("/home/nmandelli/.julia/packages/J_Space/______/"); using Pkg; Pkg.activate("."); using J_Space;'
 ```
-`Note` : "______" refers to the code given to the installed package `(J_Space)`, replace it with the code you can find in the indicated path. Make sure the path refers to the location of your package.  
+`Note : "______" refers to the code given to the installed package (J_Space), replace it with the code you can find in the indicated path. Make sure the path refers to the location of your package.`  
 * Activate `JHistint` package and Run function for downloading slides and populating DB:  
 ```
 julia -e  'cd("/home/nmandelli/.julia/packages/JHistint/______/"); using Pkg; Pkg.activate("."); using JHistint; JHistint.download_single_collection("lusc")'
 ```
-`Note` : "______" refers to the code given to the installed package `(JHistint)`, replace it with the code you can find in the indicated path. Make sure the path refers to the location of your package.  
-The demo is structured for three histological slides, therefore it is sufficient to interrupt the execution after downloading the first three slides (using `Ctrl + C`). The output will be displayed on the screen. 
+`Note : "______" refers to the code given to the installed package (JHistint), replace it with the code you can find in the indicated path. Make sure the path refers to the location of your package.  
+The demo is structured for three histological slides, therefore it is sufficient to interrupt the execution after downloading the first three slides (using Ctrl + C). The output will be displayed on the screen.` 
 * Run function for segmentating slides in DB, creating graph and build adjancency matrix. Interface with `J-Space` for Files and Plots build:
 ```
 julia -e  'using JHistint; JHistint.slide_cell_segmentation_without_download("lusc")'
