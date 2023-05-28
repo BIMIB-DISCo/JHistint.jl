@@ -346,7 +346,7 @@ function slide_cell_segmentation_with_download(collection_name::AbstractString)
     end
 end
 
-function start_segmentation_SOPHYSM(filepath_input::AbstractString, filepath_output::AbstractString, thresholdGray::AbstractString, thresholdMarker::AbstractString)
+function start_segmentation_SOPHYSM(filepath_input::AbstractString, filepath_output::AbstractString, thresholdGray::Float64, thresholdMarker::Float64)
     apply_segmentation_SOPHYSM(filepath_input, filepath_output, thresholdGray, thresholdMarker)
 end
 

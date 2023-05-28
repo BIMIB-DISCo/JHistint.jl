@@ -303,7 +303,7 @@ function apply_segmentation_with_download(slide_info::Tuple{String, Vector{UInt8
     return filepath_seg, filepath_matrix, matrix
 end
 
-function apply_segmentation_SOPHYSM(filepath_input::AbstractString, filepath_output::AbstractString, thresholdGray::AbstractString, thresholdMarker::AbstractString)
+function apply_segmentation_SOPHYSM(filepath_input::AbstractString, filepath_output::AbstractString, thresholdGray::Float64, thresholdMarker::Float64)
     # load slide
     svs_image = read(filepath_input)
     img = ImageMagick.load_(svs_image)
