@@ -302,3 +302,29 @@ function apply_segmentation_with_download(slide_info::Tuple{String, Vector{UInt8
     save(filepath_seg, masked_colored_labels)
     return filepath_seg, filepath_matrix, matrix
 end
+
+function apply_segmentation_SOPHYSM(filepath_input::AbstractString, filepath_output::AbstractString, thresholdGray::AbstractString, thresholdMarker::AbstractString)
+    # load slide
+    svs_image = read(filepath_input)
+    img = ImageMagick.load_(svs_image)
+    bw = Gray.(img) .> thresholdGray
+    dist = 1 .- distance_transform(feature_transform(bw))
+    markers = label_components(dist .< thresholdMarker)
+    # watershed
+    segments = watershed(dist, markers)
+    # build segmented slide
+    labels = labels_map(segments)
+    colored_labels = IndirectArray(labels, distinguishable_colors(maximum(labels)))
+    masked_colored_labels = colored_labels .* (1 .- bw)
+    # build graph
+    weight_fn(i,j) = euclidean(segment_pixel_count(segments,i), segment_pixel_count(segments,j))
+    G, vert_map = region_adjacency_graph(segments, weight_fn)
+    nvertices = length(vert_map)
+    # build and save adjacency matrix
+    matrix = weighted_graph_to_adjacency_matrix(G, nvertices)
+    filepath_matrix = replace(filepath_output, r"....$" => ".txt")
+    save_adjacency_matrix(matrix, filepath_matrix)
+    # save segmented slide
+    filepath_seg = replace(filepath_output, r"....$" => "_seg.png")
+    save(filepath_seg, masked_colored_labels)
+end

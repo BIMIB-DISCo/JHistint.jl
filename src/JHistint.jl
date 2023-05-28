@@ -281,7 +281,7 @@ The output files are saved in a user-defined directory. The function may take a 
 depending on the size of the slides and the complexity of the segmentation algorithm.
 For each slide in the database, cell segmentation is performed using the `apply_segmentation_with_download` function,
 and the path where the result is saved is stored in the database using the `load_seg_slide` function. The segmentation process
-is similar to that described in the `slide_cell_segmentation_with_download` function, with the added step of downloading
+is similar to that described in the `slide_cell_segmentation_without_download` function, with the added step of downloading
 the segmented image and placing it in the same directory as the original slide.
 The segmentation process is defined in 6 steps:
 - LOAD SLIDE ... (slide_id)
@@ -344,5 +344,13 @@ function slide_cell_segmentation_with_download(collection_name::AbstractString)
     else
         println("ERROR : $collection_name - collection not avaiable. Retry with a new collection.")
     end
+end
+
+function start_segmentation_SOPHYSM(filepath_input::AbstractString, filepath_output::AbstractString, thresholdGray::AbstractString, thresholdMarker::AbstractString)
+    apply_segmentation_SOPHYSM(filepath_input, filepath_output, thresholdGray, thresholdMarker)
+end
+
+function start_simulation_SOPHYSM()
+
 end
 end
