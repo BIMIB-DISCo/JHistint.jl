@@ -274,6 +274,6 @@ The state of the lattice at any time of the simulation for the three different e
       </td>
     </tr>
  </table>
- 
+
 ## Documentation
 Documentation is available on the Julia Pages at  https://niccolo99mandelli.github.io/JHistint.jl/
