@@ -276,4 +276,6 @@ The state of the lattice at any time of the simulation for the three different e
  </table>
 
 ## Documentation
-Documentation is available on the Julia Pages at  https://niccolo99mandelli.github.io/JHistint.jl/
+Documentation is available on the Julia Pages at:  https://niccolo99mandelli.github.io/JHistint.jl/  
+Further information about the J-Space package can be found at the following repository: https://github.com/niccolo99mandelli/J-Space.jl.git
+
