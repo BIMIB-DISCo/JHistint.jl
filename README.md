@@ -262,12 +262,12 @@ The state of the lattice at any time of the simulation for the three different e
         Example 1 - Driver Tree
       </td>
       <td>
-        <img src="output_example_demo/slideExample2/SlideExample_mini_2_Plots_JSpace/driver_tree.png" alt=Example 2 - Driver Tree" width= "300" height="250">
+        <img src="output_example_demo/slideExample2/SlideExample_mini_2_Plots_JSpace/driver_tree.png" alt="Example 2 - Driver Tree" width= "300" height="250">
         <br>
         Example 2 - Driver Tree
       </td>
       <td>
-        <img src="output_example_demo/slideExample3/SlideExample_mini_3_Plots_JSpace/driver_tree.png" alt=Example 3 - Driver Tree" 
+        <img src="output_example_demo/slideExample3/SlideExample_mini_3_Plots_JSpace/driver_tree.png" alt="Example 3 - Driver Tree" 
              width= "300" height="250">
         <br>
         Example 3 - Driver Tree
