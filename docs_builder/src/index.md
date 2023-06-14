@@ -79,7 +79,7 @@ Otherwise, type `]` in the Julia REPL and execute:
 (@v1.8) pkg > using JHistint
 ```
 
-## Download Slides functions (JHistint.jl)
+## Download Slides main functions (JHistint.jl)
 ```@docs
 download_single_collection(collection_name::AbstractString)
 ```
@@ -87,7 +87,7 @@ download_single_collection(collection_name::AbstractString)
 ```@docs
 download_all_collection()
 ```
-## Cell Segmentation Slides functions (JHistint.jl)
+## Cell Segmentation Slides main functions (JHistint.jl)
 ```@docs
 slide_cell_segmentation_without_download(collection_name::AbstractString)
 ```
@@ -105,6 +105,11 @@ apply_segmentation_with_download(slide_info::Tuple{String, Vector{UInt8}, String
 ```
 
 ```@docs
+get_random_color(seed)
+```
+
+## Support Functions for Graph (graphManager.jl)
+```@docs
 save_adjacency_matrix(matrix::Matrix{Int64}, filepath_matrix::AbstractString)
 ```
 
@@ -112,9 +117,6 @@ save_adjacency_matrix(matrix::Matrix{Int64}, filepath_matrix::AbstractString)
 weighted_graph_to_adjacency_matrix(G::SimpleWeightedGraph{Int64, Float64}, n::Int64)
 ```
 
-```@docs
-get_random_color(seed)
-```
 ## DB Support Functions (dbManager.jl)
 ```@docs
 insert_record_DB(col_name::AbstractString,
