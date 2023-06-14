@@ -17,6 +17,7 @@ using IndirectArrays
 using Graphs
 using LightGraphs
 using SimpleWeightedGraphs
+using CSV
 using J_Space
 
 # Exported Functions
@@ -24,13 +25,16 @@ export download_single_collection
 export download_all_collection
 export slide_cell_segmentation_without_download
 export slide_cell_segmentation_with_download
+export start_segmentation_SOPHYSM
 
 # Included Files
 include("apiManager.jl")
 include("dbManager.jl")
 include("zipManager.jl")
 include("segmentationManager.jl")
+include("graphManager.jl")
 
+# Main Functions
 """
     download_single_collection(collection_name::AbstractString)
 
@@ -348,9 +352,5 @@ end
 
 function start_segmentation_SOPHYSM(filepath_input::AbstractString, filepath_output::AbstractString, thresholdGray::Float64, thresholdMarker::Float64)
     apply_segmentation_SOPHYSM(filepath_input, filepath_output, thresholdGray, thresholdMarker)
-end
-
-function start_simulation_SOPHYSM()
-
 end
 end

@@ -66,12 +66,17 @@ function insert_record_DB(col_name::AbstractString,
     vial = sample_type_vial[3:3]
     # Extract data from image slide
     # Setting for DEMO
-    if (sin_cas_name == "TCGA-18-3406-01A-01-BS1")
-        filepath_svs = joinpath(@__DIR__, "..", "input_example_demo", "slideExample1", "SlideExample_mini_1.tif")
-    elseif (sin_cas_name == "TCGA-18-3406-01A-01-TS1")
-        filepath_svs = joinpath(@__DIR__, "..", "input_example_demo", "slideExample2", "SlideExample_mini_2.tif")
-    else
-        filepath_svs = joinpath(@__DIR__, "..", "input_example_demo", "slideExample3", "SlideExample_mini_3.tif")
+    filepath_config = joinpath(@__DIR__, "..", "Config.toml")
+    config = TOML.parsefile(filepath_config)
+    demo = config["demo"]
+    if (demo == 1)
+        if (sin_cas_name == "TCGA-18-3406-01A-01-BS1")
+            filepath_svs = joinpath(@__DIR__, "..", "input_example_demo", "slideExample1", "SlideExample_mini_1.tif")
+        elseif (sin_cas_name == "TCGA-18-3406-01A-01-TS1")
+            filepath_svs = joinpath(@__DIR__, "..", "input_example_demo", "slideExample2", "SlideExample_mini_2.tif")
+        else
+            filepath_svs = joinpath(@__DIR__, "..", "input_example_demo", "slideExample3", "SlideExample_mini_3.tif")
+        end
     end
     svs_image = read(filepath_svs)
 
