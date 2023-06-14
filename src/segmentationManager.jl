@@ -353,7 +353,7 @@ function apply_segmentation_SOPHYSM(filepath_input::AbstractString, filepath_out
     G, vert_map, df = region_adjacency_graph(segments, weight_fn)
     nvertices = length(vert_map)
     # build and save adjacency matrix
-    matrix = weighted_graph_to_adjacency_matrix_weight(G, nvertices)
+    matrix = weighted_graph_to_adjacency_matrix(G, nvertices)
     filepath_matrix = replace(filepath_output, r"....$" => ".txt")
     save_adjacency_matrix(matrix, filepath_matrix)
     # save segmented slide
