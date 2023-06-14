@@ -1,8 +1,11 @@
 export get_random_color
 export weighted_graph_to_adjacency_matrix
+export weighted_graph_to_adjacency_matrix_weight
 export save_adjacency_matrix
+export region_adjacency_graph
 export apply_segmentation_without_download
 export apply_segmentation_with_download
+export apply_segmentation_SOPHYSM
 
 """
 `SegmentedImage` type contains the index-label mapping, assigned labels,
@@ -40,7 +43,7 @@ Returns a real number corresponding to the weight of the edge between label1 and
 """
 function region_adjacency_graph(s::SegmentedImage, weight_fn::Function)
 
-    function neighbor_regions!(G::SimpleWeightedGraph, visited::AbstractArray, s::SegmentedImage, I::CartesianIndex)
+    function neighbor_regions!(df_cartesian_indices::AbstractArray, G::SimpleWeightedGraph, visited::AbstractArray, s::SegmentedImage, I::CartesianIndex)
         # n = Set{Int} - visited = Array - s = segmented image - p = CartesianIndex which define neighbors
         # R contains each possible index in s
         R = CartesianIndices(axes(s.image_indexmap))
@@ -52,7 +55,6 @@ function region_adjacency_graph(s::SegmentedImage, weight_fn::Function)
         t = Vector{CartesianIndex{ndims(visited)}}()
         # add index I to Vector t
         push!(t, I)
-
         while !isempty(t)
             # Extract last element of t and save it in temp
             temp = pop!(t)
@@ -67,10 +69,11 @@ function region_adjacency_graph(s::SegmentedImage, weight_fn::Function)
                         # If the values are different, it means they have two different colorings for the two points,
                         # therefore a neighbor has been identified, which is pushed into n.
                         # push!(n,s.image_indexmap[J])
+                    if !Graphs.has_edge(G, vert_map[s.image_indexmap[I]], vert_map[s.image_indexmap[J]])
                         Graphs.add_edge!(G, vert_map[s.image_indexmap[I]], vert_map[s.image_indexmap[J]], weight_fn(s.image_indexmap[I], s.image_indexmap[J]))
                         # push!(added_indices, s.image_indexmap[J])
                         # push!(n,s.image_indexmap[J])
-                    # end
+                    end
                 elseif !visited[J]
                     # If they are equal, I place them in t, so that,
                     # as long as t is not empty, I can explore all the neighbors
@@ -84,15 +87,16 @@ function region_adjacency_graph(s::SegmentedImage, weight_fn::Function)
     visited  = fill(false, axes(s.image_indexmap))                           # Array to mark the pixels that are already visited
     G        = SimpleWeightedGraph()                                         # The region_adjacency_graph
     vert_map = Dict{Int,Int}()                                               # Map that stores (label, vertex) pairs
-
+    # Build object for dataframe
+    df = DataFrame()
+    df_cartesian_indices = []
+    df_color_indices = []
     # add vertices to graph
     Graphs.add_vertices!(G,length(s.segment_labels))
-
     # setup `vert_map`
     for (i,l) in enumerate(s.segment_labels)
         vert_map[l] = i
     end
-
     # add edges to graph
     # For each CartesianIndices in s where the image_indexmap represent the image wich is a Multidimensional Array
     # The index of s.image_indexmap represent the pixel position in the segmented image
@@ -100,11 +104,12 @@ function region_adjacency_graph(s::SegmentedImage, weight_fn::Function)
     for p in CartesianIndices(axes(s.image_indexmap))
         # check if p of the segmented image s is not visited
         if !visited[p]
+            push!(df_cartesian_indices, p)
             # n = Set{Int16}()
             # Call neighbor_regions where :
             # n = Set{Int} - visited = Array - s = segmented image - p = CartesianIndex which define neighbors
             try
-                neighbor_regions!(G, visited, s, p)
+                neighbor_regions!(df_cartesian_indices, G, visited, s, p)
             catch oom
                 if isa(oom, OutOfMemoryError)
                     # n = Set{Int}()
@@ -118,9 +123,15 @@ function region_adjacency_graph(s::SegmentedImage, weight_fn::Function)
             # end
         end
     end
-    G, vert_map
-end
 
+    for i in s.segment_labels
+        push!(df_color_indices, s.segment_means[i])
+    end
+    df.label = s.segment_labels
+    df.position_label = df_cartesian_indices
+    df.color_label = df_color_indices
+    G, vert_map, df
+end
 
 """
     get_random_color(seed)
@@ -161,6 +172,26 @@ function weighted_graph_to_adjacency_matrix(G::SimpleWeightedGraph{Int64, Float6
             if Graphs.has_edge(G, i, j)
                 adjacency_matrix[i, j] = 1
                 adjacency_matrix[j, i] = 1
+            end
+        end
+    end
+    return adjacency_matrix
+end
+
+function weighted_graph_to_adjacency_matrix_weight(G::SimpleWeightedGraph{Int64, Float64}, n::Int64)
+    adjacency_matrix = zeros(Int, n, n)
+    for i in 1:n
+        for j in 1:n
+            adjacency_matrix[i, j] = -1
+            adjacency_matrix[j, i] = -1
+        end
+    end
+
+    for i in 1:n
+        for j in 1:n
+            if Graphs.has_edge(G, i, j)
+                adjacency_matrix[i, j] = SimpleWeightedGraphs.get_weight(G, i, j)
+                adjacency_matrix[j, i] = SimpleWeightedGraphs.get_weight(G, i, j)
             end
         end
     end
@@ -318,10 +349,11 @@ function apply_segmentation_SOPHYSM(filepath_input::AbstractString, filepath_out
     masked_colored_labels = colored_labels .* (1 .- bw)
     # build graph
     weight_fn(i,j) = euclidean(segment_pixel_count(segments,i), segment_pixel_count(segments,j))
-    G, vert_map = region_adjacency_graph(segments, weight_fn)
+    df = DataFrame()
+    G, vert_map, df = region_adjacency_graph(segments, weight_fn)
     nvertices = length(vert_map)
     # build and save adjacency matrix
-    matrix = weighted_graph_to_adjacency_matrix(G, nvertices)
+    matrix = weighted_graph_to_adjacency_matrix_weight(G, nvertices)
     filepath_matrix = replace(filepath_output, r"....$" => ".txt")
     save_adjacency_matrix(matrix, filepath_matrix)
     # save segmented slide
