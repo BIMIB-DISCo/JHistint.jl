@@ -1,3 +1,7 @@
-#This is an example of config files
+# Config files (.toml)
 
+# Set name of the collection, default value doesn't affect execution
 collection_name = "default"
+
+# Set 1 for running Demo, otherwise 0
+demo = 0

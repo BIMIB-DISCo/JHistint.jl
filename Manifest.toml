@@ -2,7 +2,7 @@
 
 julia_version = "1.8.5"
 manifest_format = "2.0"
-project_hash = "fca3895c212c1c6bc71c26fdd37ccc0ada5b152d"
+project_hash = "c43aaccbc65fd0e38be3702ebc6cb9ac12734846"
 
 [[deps.ANSIColoredPrinters]]
 git-tree-sha1 = "574baf8110975760d391c710b6341da1afa48d8c"
@@ -116,10 +116,10 @@ version = "0.4.2"
 uuid = "8bf52ea8-c179-5cab-976a-9e18b702a9bc"
 
 [[deps.CSV]]
-deps = ["CodecZlib", "Dates", "FilePathsBase", "InlineStrings", "Mmap", "Parsers", "PooledArrays", "SentinelArrays", "SnoopPrecompile", "Tables", "Unicode", "WeakRefStrings", "WorkerUtilities"]
-git-tree-sha1 = "c700cce799b51c9045473de751e9319bdd1c6e94"
+deps = ["CodecZlib", "Dates", "FilePathsBase", "InlineStrings", "Mmap", "Parsers", "PooledArrays", "PrecompileTools", "SentinelArrays", "Tables", "Unicode", "WeakRefStrings", "WorkerUtilities"]
+git-tree-sha1 = "44dbf560808d49041989b8a96cae4cffbeb7966a"
 uuid = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
-version = "0.10.9"
+version = "0.10.11"
 
 [[deps.Cairo]]
 deps = ["Cairo_jll", "Colors", "Glib_jll", "Graphics", "Libdl", "Pango_jll"]
@@ -847,7 +847,7 @@ version = "0.21.3"
 
 [[deps.J_Space]]
 deps = ["BioSequences", "CSV", "CairoMakie", "DataFrames", "DataStructures", "DelimitedFiles", "Distributed", "Distributions", "FASTX", "GraphMakie", "Graphs", "LinearAlgebra", "MetaGraphs", "NetworkLayout", "PhyloNetworks", "Plots", "Random", "StatsBase", "StringDistances", "TOML", "Tables", "UUIDs"]
-git-tree-sha1 = "d25564aad68b415b9ea9d7a41a9b3e16102fc9a8"
+git-tree-sha1 = "1803e18f01fed4022f069616f6dbd19328b99cda"
 repo-rev = "main"
 repo-url = "https://github.com/niccolo99mandelli/J-Space.jl.git"
 uuid = "fd1b0027-9d6f-49b5-97ba-2af5672b046a"
