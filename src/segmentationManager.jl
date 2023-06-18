@@ -35,38 +35,27 @@ The function performs the segmentation of a histological image, generates its co
 The function uses the watershed segmentation algorithm to segment the image into different groups of pixels. Segmentation is performed using a feature transformation of the image (`feature_transform`) and labeling of connected components. The distance between the different regions is then calculated, and an adjacency graph of the regions is constructed using the `region_adjacency_graph` function. The resulting graph is then transformed into an adjacency matrix using the `weighted_graph_to_adjacency_matrix` function and saved to the path of the original image.
 """
 function apply_segmentation_without_download(slide_info::Tuple{String, Vector{UInt8}, String})
-    # initialization
     svs_image = slide_info[2]
     slide_id = slide_info[1]
-    # start segmentation process
+
     println("LOAD SLIDE ... ($slide_id)")
     img = ImageMagick.load_(svs_image)
     bw = Gray.(img) .> 0.15
-    img = nothing
     dist = 1 .- distance_transform(feature_transform(bw))
-    bw = nothing
     markers = label_components(dist .< -0.3)
 
     println("APPLY SEGMENTATION ... ($slide_id)")
     segments = watershed(dist, markers)
-    dist = nothing
-    markers = nothing
-    GC.gc()
 
     println("BUILD GRAPH ... ($slide_id)")
     weight_fn(i,j) = euclidean(segment_pixel_count(segments,i), segment_pixel_count(segments,j))
     df = DataFrame()
     G, vert_map, df = region_adjacency_graph(segments, weight_fn)
     nvertices = length(vert_map)
-    vert_map = nothing
-    segments = nothing
-    GC.gc()
 
     println("BUILD & SAVE ADJACENCY MATRIX ... ($slide_id)")
     matrix = weighted_graph_to_adjacency_matrix(G, nvertices)
     filepath_matrix = replace(slide_info[3], ".tif" => ".txt")
-    G = nothing
-    nvertices = nothing
     save_adjacency_matrix(matrix, filepath_matrix)
 
     return filepath_matrix, matrix
@@ -91,10 +80,9 @@ The obtained graph is transformed into an adjacency matrix using the `weighted_g
 Finally, a segmented `.tif` image is saved, and the path of the segmented slide file is returned.
 """
 function apply_segmentation_with_download(slide_info::Tuple{String, Vector{UInt8}, String})
-    # initialization
     svs_image = slide_info[2]
     slide_id = slide_info[1]
-    # start segmentation process
+
     println("LOAD SLIDE ... ($slide_id)")
     img = ImageMagick.load_(svs_image)
     bw = Gray.(img) .> 0.15
@@ -142,16 +130,20 @@ function apply_segmentation_SOPHYSM(filepath_input::AbstractString, filepath_out
     masked_colored_labels = colored_labels .* (1 .- bw)
     # build graph
     weight_fn(i,j) = euclidean(segment_pixel_count(segments,i), segment_pixel_count(segments,j))
-    df = DataFrame()
-    G, vert_map, df = region_adjacency_graph(segments, weight_fn)
+    df_labels = DataFrame()
+    G, vert_map, df_labels = region_adjacency_graph(segments, weight_fn)
     nvertices = length(vert_map)
-    # save dataframe as .CSV
-    filepath_dataframe = replace(filepath_output, r"....$" => "_dataframe.csv")
-    CSV.write(filepath_dataframe, df)
+    # save dataframe label as .CSV
+    filepath_dataframe_labels = replace(link, ".tif" => "_dataframe_labels.csv")
+    CSV.write(filepath_dataframe_labels, df_labels)
     # build and save adjacency matrix
-    matrix = weighted_graph_to_adjacency_matrix(G, nvertices)
+    matrix = weighted_graph_to_adjacency_matrix_weight(G, nvertices)
     filepath_matrix = replace(filepath_output, r"....$" => ".txt")
     save_adjacency_matrix(matrix, filepath_matrix)
+    # build and save dataframe edgelist as .CSV
+    df_edges = build_dataframe_as_edgelist(matrix)
+    filepath_dataframe_edges = replace(link, ".tif" => "_dataframe_edges.csv")
+    CSV.write(filepath_dataframe_edges, df_edges)
     # save segmented slide
     filepath_seg = replace(filepath_output, r"....$" => "_seg.png")
     save(filepath_seg, masked_colored_labels)

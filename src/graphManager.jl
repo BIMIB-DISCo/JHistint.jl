@@ -82,8 +82,8 @@ function region_adjacency_graph(s::SegmentedImage, weight_fn::Function)
     visited  = fill(false, axes(s.image_indexmap))                           # Array to mark the pixels that are already visited
     G        = SimpleWeightedGraph()                                         # The region_adjacency_graph
     vert_map = Dict{Int,Int}()                                               # Map that stores (label, vertex) pairs
-    # Build object for dataframe
-    df = DataFrame()
+    # Build object for label (vertex) dataframe
+    df_label = DataFrame()
     df_cartesian_indices = []
     df_color_indices = []
     # add vertices to graph
@@ -122,24 +122,24 @@ function region_adjacency_graph(s::SegmentedImage, weight_fn::Function)
     for i in s.segment_labels
         push!(df_color_indices, s.segment_means[i])
     end
-    df.label = s.segment_labels
-    df.position_label = df_cartesian_indices
-    df.color_label = df_color_indices
-    G, vert_map, df
+    df_label.label = s.segment_labels
+    df_label.position_label = df_cartesian_indices
+    df_label.color_label = df_color_indices
+    G, vert_map, df_label
 end
 
 
 """
     weighted_graph_to_adjacency_matrix(G::SimpleWeightedGraph{Int64, Float64}, n::Int64)
 
-Converts a weighted graph represented as a `SimpleWeightedGraph` into an unweighted adjacency matrix.
+Converts a weighted graph represented as a `SimpleWeightedGraph` into an unweighted boolean adjacency matrix.
 
 # Arguments:
 - `G::SimpleWeightedGraph{Int64, Float64}`: Weighted graph represented as a `SimpleWeightedGraph` with integer vertex labels and floating-point edge weights.
 - `n::Int64`: Number of nodes in the adjacency matrix.
 
 # Return value:
-- `adjacency_matrix`: `Matrix{Int64}` adjacency matrix.
+- `adjacency_matrix`: `Matrix{Int64}` boolean adjacency matrix.
 
 # Notes:
 The function returns an `n` x `n` adjacency matrix representing the unweighted graph. If nodes `i` and `j` are adjacent,
@@ -158,8 +158,17 @@ function weighted_graph_to_adjacency_matrix(G::SimpleWeightedGraph{Int64, Float6
     return adjacency_matrix
 end
 
+"""
+    weighted_graph_to_adjacency_matrix_weight(G::SimpleWeightedGraph{Int64, Float64}, n::Int64)
+
+# Arguments:
+
+# Return value:
+
+# Notes:
+"""
 function weighted_graph_to_adjacency_matrix_weight(G::SimpleWeightedGraph{Int64, Float64}, n::Int64)
-    adjacency_matrix = zeros(Int, n, n)
+    adjacency_matrix = zeros(Float32, n, n)
     for i in 1:n
         for j in 1:n
             adjacency_matrix[i, j] = -1
@@ -178,6 +187,67 @@ function weighted_graph_to_adjacency_matrix_weight(G::SimpleWeightedGraph{Int64,
     return adjacency_matrix
 end
 
+
+"""
+    build_dataframe_as_edgelist(mat::Matrix{Int64})
+
+# Arguments:
+
+# Return value:
+
+# Notes:
+"""
+function build_dataframe_as_edgelist(mat::Matrix{Int64})
+    df = DataFrame()
+    df_origin_column = []
+    df_destination_column = []
+    df_weight_column = []
+    n = size(mat, 1)
+    for i in 1:n
+        for j in 1:i
+            if mat[i,j] != -1
+                push!(df_origin_column, i)
+                push!(df_destination_column, j)
+                push!(df_weight_column, mat[i,j])
+            end
+        end
+    end
+    df.origin = df_origin_column
+    df.destination = df_destination_column
+    df.weight = df_weight_column
+    return df
+end
+
+"""
+    build_dataframe_as_edgelist(mat::Matrix{Float32})
+
+# Arguments:
+
+# Return value:
+
+# Notes:
+"""
+function build_dataframe_as_edgelist(mat::Matrix{Float32})
+    df = DataFrame()
+    df_origin_column = []
+    df_destination_column = []
+    df_weight_column = []
+    n = size(mat, 1)
+    for i in 1:n
+        for j in 1:i
+            if mat[i,j] != -1
+                push!(df_origin_column, i)
+                push!(df_destination_column, j)
+                push!(df_weight_column, mat[i,j])
+            end
+        end
+    end
+    df.origin = df_origin_column
+    df.destination = df_destination_column
+    df.weight = df_weight_column
+    return df
+end
+
 """
     save_adjacency_matrix(matrix::Matrix{Int64}, filepath_matrix::AbstractString)
 
@@ -192,6 +262,32 @@ The function opens the file specified by the `filepath_matrix` path in write mod
 where each row represents the adjacent nodes of a node. The numbers in the matrix are separated by spaces.
 """
 function save_adjacency_matrix(matrix::Matrix{Int64}, filepath_matrix::AbstractString)
+    # Open txt file
+    f = open(filepath_matrix, "w")
+    # Write matrix dimensions
+    n_rows, n_cols = size(matrix)
+    matrix_string = ""
+    for i in 1:n_rows
+        write(f, " ")
+        for j in 1:n_cols
+            matrix_string = string("", matrix[i, j], "  ")
+            write(f, matrix_string)
+        end
+        write(f, "\n")
+    end
+    close(f)
+end
+
+"""
+    save_adjacency_matrix(matrix::Matrix{Float32}, filepath_matrix::AbstractString)
+
+# Arguments:
+
+# Return value:
+
+# Notes:
+"""
+function save_adjacency_matrix(matrix::Matrix{Float32}, filepath_matrix::AbstractString)
     # Open txt file
     f = open(filepath_matrix, "w")
     # Write matrix dimensions
