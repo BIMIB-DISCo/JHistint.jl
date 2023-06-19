@@ -134,7 +134,7 @@ function apply_segmentation_SOPHYSM(filepath_input::AbstractString, filepath_out
     G, vert_map, df_labels = region_adjacency_graph(segments, weight_fn)
     nvertices = length(vert_map)
     # save dataframe label as .CSV
-    filepath_dataframe_labels = replace(link, ".tif" => "_dataframe_labels.csv")
+    filepath_dataframe_labels = replace(filepath_output, r"....$" => "_dataframe_labels.csv")
     CSV.write(filepath_dataframe_labels, df_labels)
     # build and save adjacency matrix
     matrix = weighted_graph_to_adjacency_matrix_weight(G, nvertices)
@@ -142,7 +142,7 @@ function apply_segmentation_SOPHYSM(filepath_input::AbstractString, filepath_out
     save_adjacency_matrix(matrix, filepath_matrix)
     # build and save dataframe edgelist as .CSV
     df_edges = build_dataframe_as_edgelist(matrix)
-    filepath_dataframe_edges = replace(link, ".tif" => "_dataframe_edges.csv")
+    filepath_dataframe_edges = replace(filepath_output, r"....$" => "_dataframe_edges.csv")
     CSV.write(filepath_dataframe_edges, df_edges)
     # save segmented slide
     filepath_seg = replace(filepath_output, r"....$" => "_seg.png")
