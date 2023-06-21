@@ -12,23 +12,20 @@ using ImageView
 using FileIO
 
 using IndirectArrays
-
-using LightGraphs
 using SimpleWeightedGraphs
-using DataStructures: Queue
 using CSV
 using DelimitedFiles
-
 using Distances
 using Base
 
+
 using MetaGraphs
 using Graphs
-
 using DataFrames
 using Random
-
-import ImageSegmentation.segment_pixel_count
+using NetworkLayout
+using CairoMakie
+using GraphMakie
 
 
 """
@@ -302,14 +299,19 @@ function metagraph_from_dataframe_JHistint(graph_type,
         MetaGraphs.add_edge!(mg, r[Symbol(origin, :_id)], r[Symbol(destination, :_id)])
     end
 
+    df[!, :Child] .= ""
+    df[!, :Time] .= ""
+    df[!, :Subpop_Child] .= ""
     # add times on graph
-    # times_df = df[:,[:Child, :Time]]
-    # vertex_names = leftjoin(vertex_names, times_df, on = :name => :Child)
+    times_df = df[:,[:Child, :Time]]
+    vertex_names = leftjoin(vertex_names, times_df, on = :name => :Child)
     # add subpop_child on graph
-    # subpop_df = df[:,[:Child, :Subpop_Child]]
-    # vertex_names = leftjoin(vertex_names, subpop_df, on = :name => :Child)
+    subpop_df = df[:,[:Child, :Subpop_Child]]
+    vertex_names = leftjoin(vertex_names, subpop_df, on = :name => :Child)
     # Set vertex names and attributes
     attr_names = propertynames(vertex_names[!, Not(:vertex_id)])
+    show(vertex_names)
+    show(attr_names)
     for r in eachrow(vertex_names)
         MetaGraphs.set_props!(mg, r[:vertex_id], Dict([a => r[a] for a in attr_names]))
     end
@@ -372,6 +374,17 @@ function spatial_graph(path_dataframe_edges::String, path_dataframe_labels::Stri
     df_labels = DataFrame(df_labels_file)
     G_meta = metagraph_from_dataframe_JHistint(MetaGraph, df_edges, :origin, :destination, :weight, :weight, df_labels, :label)
     return G_meta
+end
+
+function plot_lattice_JHistint(G::MetaGraph)
+    mylayout = Spectral()
+    f, ax, p = graphplot(G,
+                         layout = mylayout,
+                         node_size = 0.0,
+                         edge_width=1.0)
+    hidedecorations!(ax)
+    hidespines!(ax)
+    return f, ax, p
 end
 
 # in DataFrameAPI.jl
@@ -483,26 +496,28 @@ filepath_matrix = replace(link, ".tif" => "_matrix.txt")
 save_adjacency_matrix(matrix, filepath_matrix)
 
 # J-Space
-# g_meta = spatial_graph(filepath_dataframe_edges, filepath_dataframe_label)
+g_meta = spatial_graph(filepath_dataframe_edges, filepath_dataframe_label)
+plot_lattice_JHistint(g_meta)
+
 # modify function in Start_J_Space
 
 # API for DataFrames to include in J-Space, new file julia for DataFrames API
-label_1 = 12
-label_2 = 11
-df_edges = find_edges_from_vertex(filepath_dataframe_edges, label_1, label_2)
+#label_1 = 12
+#label_2 = 11
+#df_edges = find_edges_from_vertex(filepath_dataframe_edges, label_1, label_2)
 
-df_neighbor = find_neighbors_from_vertex(filepath_dataframe_edges, filepath_dataframe_label, label_1)
+#df_neighbor = find_neighbors_from_vertex(filepath_dataframe_edges, filepath_dataframe_label, label_1)
 
-CI_example = CartesianIndex(95, 1, 1)
-df_vertex = find_vertex_from_CI(filepath_dataframe_label, CI_example)
+#CI_example = CartesianIndex(95, 1, 1)
+#df_vertex = find_vertex_from_CI(filepath_dataframe_label, CI_example)
 
-color_example = 0.6854407198549426
-df_vertex = find_vertex_from_color(filepath_dataframe_label, color_example)
+#color_example = 0.6854407198549426
+#df_vertex = find_vertex_from_color(filepath_dataframe_label, color_example)
 
-df_vertex = find_vertex_from_label(filepath_dataframe_label, label_1)
+#df_vertex = find_vertex_from_label(filepath_dataframe_label, label_1)
 
-degree = count_vertex_degree(filepath_dataframe_edges, label_1)
+#degree = count_vertex_degree(filepath_dataframe_edges, label_1)
 
-edges = count_edges(filepath_dataframe_edges)
+#edges = count_edges(filepath_dataframe_edges)
 
-vertices = count_vertices(filepath_dataframe_label)
+#vertices = count_vertices(filepath_dataframe_label)
