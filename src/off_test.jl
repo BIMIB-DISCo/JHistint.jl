@@ -377,13 +377,24 @@ function spatial_graph(path_dataframe_edges::String, path_dataframe_labels::Stri
 end
 
 function plot_lattice_JHistint(G::MetaGraph)
-    mylayout = Spectral()
+    mylayout = Spectral(dim=3)
     f, ax, p = graphplot(G,
                          layout = mylayout,
                          node_size = 0.0,
                          edge_width=1.0)
-    hidedecorations!(ax)
-    hidespines!(ax)
+     # hidedecorations!(ax)
+     # hidespines!(ax)
+    save("image.png", f)
+    return f, ax, p
+end
+
+function plot_lattice(G::SimpleWeightedGraph)
+    mylayout = SquareGrid()
+    f, ax, p = graphplot(G,
+                         layout = mylayout,
+                         node_size = 0.0,
+                         node_color = 1.0)
+    save("image.png", f)
     return f, ax, p
 end
 
@@ -497,7 +508,7 @@ save_adjacency_matrix(matrix, filepath_matrix)
 
 # J-Space
 g_meta = spatial_graph(filepath_dataframe_edges, filepath_dataframe_label)
-plot_lattice_JHistint(g_meta)
+plot_lattice_JHistint(G)
 
 # modify function in Start_J_Space
 
