@@ -86,7 +86,7 @@ function download_single_collection(collection_name::AbstractString)
                 else
                     mkdir(joinpath(@__DIR__, "..", "slides", "$(collection_name)", "$j"))
                 end
-                filepath_slides = joinpath(@__DIR__, "..", "slides", "$(collection_name)", "$j", "$(y).zip")
+                filepath_slides = joinpath(@__DIR__, "..", "slides", "$(collection_name)", "$j", "$(y).gzip")
                 link_slides = "https://api.digitalslidearchive.org/api/v1/folder/$x/download"
                 download_zip(link_slides, filepath_slides)
                 filepath_svs = extract_slide(filepath_slides)
