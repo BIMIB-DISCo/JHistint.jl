@@ -4,4 +4,4 @@
 collection_name = "default"
 
 # Set 1 for running Demo, otherwise 0
-demo = 0
+demo = 1
