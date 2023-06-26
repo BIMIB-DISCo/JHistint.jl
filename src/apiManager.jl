@@ -191,12 +191,17 @@ Function for downloading histological slides in `.zip` format associated with th
 - `filepath::AbstractString` = Path to save the `.zip` file.
 """
 function download_zip(link::AbstractString, filepath::AbstractString)
-    response = HTTP.get(link)
-    if response.status == 200
-         open(filepath, "w") do file
-        write(file, response.body)
-    end
-    else
-        println("Error: HTTP request returned status code $(response.status)")
+    #response = HTTP.get(link)
+    #if response.status == 200
+    #     open(filepath, "w") do file
+    #    write(file, response.body)
+    #end
+    #else
+    #    println("Error: HTTP request returned status code $(response.status)")
+    #end
+    HTTP.open(:GET, link) do http
+        open(filepath, "w") do file
+            write(file, http)
+        end
     end
 end
