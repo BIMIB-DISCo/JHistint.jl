@@ -261,7 +261,7 @@ function slide_cell_segmentation_without_download(collection_name::AbstractStrin
                 filepath_reference_JSPACE = replace(filepath_matrix, ".txt" => "_reference.fasta")
                 filepath_dataframe_labels = replace(filepath_matrix, r"....$" => "_dataframe_labels.csv")
                 filepath_dataframe_edges = replace(filepath_matrix, r"....$" => "_dataframe_edges.csv")
-                Start_J_Space(filepath_reference_JSPACE, filepath_matrix, filepath_file_JSPACE, filepath_plot_JSPACE, slide_id)
+                Start_J_Space(filepath_reference_JSPACE, filepath_matrix, filepath_file_JSPACE, filepath_plot_JSPACE, slide_id, filepath_dataframe_edges, filepath_dataframe_labels)
             end
         end
     else
