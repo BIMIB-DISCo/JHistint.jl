@@ -86,7 +86,7 @@ function download_single_collection(collection_name::AbstractString)
                 else
                     mkdir(joinpath(@__DIR__, "..", "slides", "$(collection_name)", "$j"))
                 end
-                filepath_slides = joinpath(@__DIR__, "..", "slides", "$(collection_name)", "$j", "$(y).gzip")
+                filepath_slides = joinpath(@__DIR__, "..", "slides", "$(collection_name)", "$j", "$(y).zip")
                 link_slides = "https://api.digitalslidearchive.org/api/v1/folder/$x/download"
                 download_zip(link_slides, filepath_slides)
                 filepath_svs = extract_slide(filepath_slides)
@@ -259,7 +259,9 @@ function slide_cell_segmentation_without_download(collection_name::AbstractStrin
                 end
 
                 filepath_reference_JSPACE = replace(filepath_matrix, ".txt" => "_reference.fasta")
-                Start_J_Space(filepath_reference_JSPACE, filepath_matrix, filepath_file_JSPACE, filepath_plot_JSPACE, slide_id)
+                filepath_dataframe_labels = replace(filepath_output, r"....$" => "_dataframe_labels.csv")
+                filepath_dataframe_edges = replace(filepath_output, r"....$" => "_dataframe_edges.csv")
+                Start_J_Space(filepath_reference_JSPACE, filepath_matrix, filepath_file_JSPACE, filepath_plot_JSPACE, slide_id, filepath_dataframe_edges, filepath_dataframe_labels)
             end
         end
     else
@@ -342,7 +344,9 @@ function slide_cell_segmentation_with_download(collection_name::AbstractString)
                 end
 
                 filepath_reference_JSPACE = replace(filepath_matrix, ".txt" => "_reference.fasta")
-                Start_J_Space(filepath_reference_JSPACE, filepath_matrix, filepath_file_JSPACE, filepath_plot_JSPACE, slide_id)
+                filepath_dataframe_labels = replace(filepath_output, r"....$" => "_dataframe_labels.csv")
+                filepath_dataframe_edges = replace(filepath_output, r"....$" => "_dataframe_edges.csv")
+                Start_J_Space(filepath_reference_JSPACE, filepath_matrix, filepath_file_JSPACE, filepath_plot_JSPACE, slide_id, filepath_dataframe_edges, filepath_dataframe_labels)
             end
         end
     else
