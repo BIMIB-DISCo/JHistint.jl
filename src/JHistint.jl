@@ -259,8 +259,8 @@ function slide_cell_segmentation_without_download(collection_name::AbstractStrin
                 end
 
                 filepath_reference_JSPACE = replace(filepath_matrix, ".txt" => "_reference.fasta")
-                filepath_dataframe_labels = replace(filepath_output, r"....$" => "_dataframe_labels.csv")
-                filepath_dataframe_edges = replace(filepath_output, r"....$" => "_dataframe_edges.csv")
+                filepath_dataframe_labels = replace(filepath_matrix, r"....$" => "_dataframe_labels.csv")
+                filepath_dataframe_edges = replace(filepath_matrix, r"....$" => "_dataframe_edges.csv")
                 Start_J_Space(filepath_reference_JSPACE, filepath_matrix, filepath_file_JSPACE, filepath_plot_JSPACE, slide_id, filepath_dataframe_edges, filepath_dataframe_labels)
             end
         end
@@ -344,8 +344,8 @@ function slide_cell_segmentation_with_download(collection_name::AbstractString)
                 end
 
                 filepath_reference_JSPACE = replace(filepath_matrix, ".txt" => "_reference.fasta")
-                filepath_dataframe_labels = replace(filepath_output, r"....$" => "_dataframe_labels.csv")
-                filepath_dataframe_edges = replace(filepath_output, r"....$" => "_dataframe_edges.csv")
+                filepath_dataframe_labels = replace(filepath_matrix, r"....$" => "_dataframe_labels.csv")
+                filepath_dataframe_edges = replace(filepath_matrix, r"....$" => "_dataframe_edges.csv")
                 Start_J_Space(filepath_reference_JSPACE, filepath_matrix, filepath_file_JSPACE, filepath_plot_JSPACE, slide_id, filepath_dataframe_edges, filepath_dataframe_labels)
             end
         end
