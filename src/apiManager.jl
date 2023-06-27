@@ -199,9 +199,12 @@ function download_zip(link::AbstractString, filepath::AbstractString)
     #else
     #    println("Error: HTTP request returned status code $(response.status)")
     #end
-    HTTP.open(:GET, link) do http
-        open(filepath, "w") do file
-            write(file, http)
+    try
+        HTTP.open(:GET, link) do http
+            open(filepath, "w") do file
+                write(file, http)
+            end
         end
+    catch EOF
     end
 end
