@@ -57,11 +57,11 @@ end
 _colon(I::CartesianIndex{N}, J::CartesianIndex{N}) where N =
     CartesianIndices(map((i,j) -> i:j, Tuple(I), Tuple(J)))
 
-struct Point{T}
-    x::T
-    y::T
-    z::T
-end
+# struct Point{T}
+#    x::T
+#    y::T
+#     z::T
+#end
 
 """
     G, vert_map = region_adjacency_graph(seg, weight_fn)
@@ -158,7 +158,7 @@ function region_adjacency_graph(s::SegmentedImage, weight_fn::Function)
     end
 
     for i in s.segment_labels
-        push!(df_color_indices, s.segment_means[i])
+        push!(df_color_indices, s.segment_means[s.image_indexmap[i]])
     end
     df_label.label = s.segment_labels
     df_label.position_label = df_cartesian_indices
@@ -409,7 +409,6 @@ function metagraph_from_dataframe_JHistint(graph_type,
     end
     # Set name as index (Issue #9)
     set_indexing_prop!(mg, :name)
-    println(mg)
     return mg
 end
 
@@ -444,24 +443,29 @@ function plot_lattice_metagraph(G::MetaGraph; dim::Int=3)
     return f, ax, p
 end
 
-function vertex_color(v)
-    props = g.vprops[v]
-    color = get_prop(props, :color, "grey")
-    return color
-end
-
-function extract_position(G::MetaGraph)
-    position_array = Point{}[]
+function extract_vertex_position(G::MetaGraph)
+    position_array = Luxor.Point[]
     for v in vertices(g_meta)
         s = get_prop(g_meta, v, :position_label)
         coordinates_str = match(r"\((.*)\)", string(s)).captures[1]
         coordinates = parse.(Int, split(coordinates_str, ", "))
         x, y ,z = coordinates
-        point = Point{Float64}(x, y, z)
+        point = Luxor.Point(y, x)
         push!(position_array, point)
     end
     return position_array
 end
+
+function extract_vertex_color(G::MetaGraph)
+    color_array = []
+    for v in vertices(g_meta)
+        color_float = get_prop(g_meta, v, :color_label)
+        #color_RGB = convert(RGB{N0f8}, HSL(color_float, color_float, color_float))
+        push!(color_array, color_float)
+    end
+    return color_array
+end
+
 
 link = joinpath(@__DIR__, "..", "input_example_demo", "slideExample1", "SlideExample_mini_1.tif")
 # load slide
@@ -484,6 +488,7 @@ println("BUILD GRAPH ...")
 weight_fn(i,j) = euclidean(segment_pixel_count(segments,i), segment_pixel_count(segments,j))
 df_labels = DataFrame()
 G, vert_map, df_labels = region_adjacency_graph(segments, weight_fn)
+show(segments.segment_means)
 nvertices = length(vert_map)
 # save dataframe label as .CSV
 filepath_dataframe_labels = replace(link, r"....$" => "_dataframe_labels.csv")
@@ -499,35 +504,36 @@ df_edges = build_dataframe_as_edgelist(matrix)
 filepath_dataframe_edges = replace(link, r"....$" => "_dataframe_edges.csv")
 CSV.write(filepath_dataframe_edges, df_edges)
 filepath_svg = replace(link, r"....$" => ".svg")
-# filepath_png = replace(link, r"....$" => ".png")
+filepath_png = replace(link, r"....$" => "_seg.png")
 # svs_png = read(filepath_png)
 # img = ImageMagick.load_(svs_png)
+image = Luxor.readpng(filepath_png)
+w = image.width
+h = image.height
 
 # J-Space
 g_meta = spatial_graph(filepath_dataframe_edges, filepath_dataframe_labels)
-
 # Plot metagraph on slide
 # plot_lattice_JHistint(g_meta)
-point_array = extract_position(g_meta)
-show(point_array)
 @svg begin
-    # Drawing(M)
-    background("black")
-    sethue("grey40")
+    # Luxor.Drawing(w, h)
+    Luxor.placeimage(image, 0, 0, 0.8)
+    sethue("slateblue")
+    move(0, 0)
     Karnak.fontsize(8)
     drawgraph(g_meta,
-        layout = point_array,
+        layout = extract_vertex_position(g_meta),
         # layout = [get_prop(g_meta, v, :position_label) for v in vertices(g_meta)],
         vertexlabels = [get_prop(g_meta, v, :name) for v in vertices(g_meta)],
         # vertexlabels = [(degree(g_meta, n) == 1) ? find(n) : "" for n in vertices(g_meta)],
         # vertexfillcolors =
         #     [RGB(rand()/2, rand()/2, rand()/2)
         #       for i in 1:nv(g_meta)],
-        # vertexfillcolors = [RGB(get_prop(g_meta, v, :color_label), get_prop(g_meta, v, :color_label), get_prop(g_meta, v, :color_label)) for v in vertices(g_meta)]
-        vertexfillcolors = [normalize_hue(get_prop(g_meta, v, :color_label)) for v in vertices(g_meta)],
+        vertexfillcolors = extract_vertex_color(g_meta),
+        # edgelines=:none
         # edgelabels = [G.weights[e.src, e.dst] for e in edges(G)]
     )
-end 600 400 filepath_svg
+end 1000 1000 filepath_svg
 
 
 
