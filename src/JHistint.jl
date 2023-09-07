@@ -19,10 +19,14 @@ using LightGraphs
 using SimpleWeightedGraphs
 using CSV
 using J_Space
+using Luxor
+using Karnak
 
 # Exported Functions
 export download_single_collection
+export download_single_collection_SOPHYSM
 export download_all_collection
+export download_all_collection_SOPHYSM
 export slide_cell_segmentation_without_download
 export slide_cell_segmentation_with_download
 export start_segmentation_SOPHYSM
@@ -140,6 +144,71 @@ function download_single_collection(collection_name::AbstractString)
 end
 
 """
+    download_single_collection_SOPHYSM(collection_name::AbstractString, path_to_save::AbstractString)
+
+Function for downloading histological slides in SOPYHSM_app associated with a collection available in TCGA.
+
+# Arguments
+- `collection_name::AbstractString` = Collection of TCGA data to download the histological slides.
+- `path_to_save::AbstractString` = Local folder path for saving histological slides.
+
+# Notes
+The function evaluates the `collection_name` argument, and in case of an invalid collection, considers the configuration in the
+`Config.toml` file. The value set in the package is `default`.
+```julia
+# Examples with valid input
+julia> JHistint.download_single_collection_SOPHYSM("acc", "C:\\...")
+julia> JHistint.download_single_collection_SOPHYSM("bLca", "C:\\...")
+```
+```julia
+# Examples with invalid input
+julia> JHistint.download_single_collection_SOPHYSM("ac", "C:\\...")
+julia> JHistint.download_single_collection_SOPHYSM("", "C:\\...")
+```
+"""
+function download_single_collection_SOPHYSM(collection_name::AbstractString, path_to_save::AbstractString)
+    # Check the value of the parameter
+    filepath_collection = joinpath(@__DIR__, "..", "collection", "collectionlist.jsn")
+    download_collection_values(filepath_collection)
+    collection_list = extract_collection_values(filepath_collection)
+
+    if lowercase(collection_name) in collection_list
+
+        collection_name = lowercase(collection_name)
+        # Project Management (TCGA-OR-A5J1, TCGA-OR-A5J2, etc.)
+        filepath_collection = joinpath(@__DIR__, "..", "collection", "$(collection_name).jsn")
+        download_project_infos(filepath_collection, collection_name)
+        project_id = extract_project_id(filepath_collection)
+        filepath_case = joinpath(@__DIR__, "..", "case", "$(collection_name).jsn")
+        casesID_values, casesNAME_values = getCasesForProject(filepath_case, project_id)
+
+        # Slides Management
+        if isdir(joinpath(path_to_save, "$collection_name"))
+            println("Update data ...")
+        else
+            mkdir(joinpath(path_to_save, "$collection_name"))
+        end
+        for (i, j) in zip(casesID_values, casesNAME_values)
+            single_casesID_values, single_casesNAME_values = getCasesForProject(filepath_case, i)
+            for (x, y) in zip(single_casesID_values, single_casesNAME_values)
+                if isdir(joinpath(path_to_save, "$(collection_name)", "$j"))
+                else
+                    mkdir(joinpath(path_to_save, "$(collection_name)", "$j"))
+                end
+                filepath_slides = joinpath(path_to_save, "$(collection_name)", "$j", "$(y).zip")
+                link_slides = "https://api.digitalslidearchive.org/api/v1/folder/$x/download"
+                download_zip(link_slides, filepath_slides)
+                filepath_svs = extract_slide(filepath_slides)
+                insert_record_DB(collection_name, j, i, y, x, link_slides, filepath_slides, filepath_svs)
+                println("DOWNLOAD Slide complete: CASE NAME = $j - SLIDE ID = $y")
+            end
+        end
+    else
+        return "error"
+    end
+end
+
+"""
     download_all_collection()
 
 Function for downloading histological slides associated with all collections available in TCGA.
@@ -177,6 +246,58 @@ function download_all_collection()
                     mkdir(joinpath(@__DIR__, "..", "slides", "$(collection_name)", "$j"))
                 end
                 filepath_slides = joinpath(@__DIR__, "..", "slides", "$(collection_name)", "$j", "$(y).zip")
+                link_slides = "https://api.digitalslidearchive.org/api/v1/folder/$x/download"
+
+                download_zip(link_slides, filepath_slides)
+                filepath_svs = extract_slide(filepath_slides)
+                insert_record_DB(collection_name, j, i, y, x, link_slides, filepath_slides, filepath_svs)
+                println("DOWNLOAD Slide complete: CASE NAME = $j - SLIDE ID = $y")
+            end
+        end
+    end
+end
+
+"""
+    download_all_collection_SOPHYSM()
+
+Function for downloading histological slides associated with all collections available in TCGA.
+
+# Arguments
+- `path_to_save::AbstractString` = Local folder path for saving histological slides.
+
+```julia
+# Examples with valid input
+julia> JHistint.download_all_collection_SOPHYSM("C:\\...")
+```
+"""
+function download_all_collection_SOPHYSM(path_to_save::AbstractString)
+    # Collection Management (acc, blca, etc.)
+    filepath_collection = joinpath(@__DIR__, "..", "collection", "collectionlist.jsn")
+    download_collection_values(filepath_collection)
+    collection_list=extract_collection_values(filepath_collection)
+
+    for collection_name in collection_list
+        # Project Management (TCGA-OR-A5J1, TCGA-OR-A5J2, etc.)
+        filepath_collection = joinpath(@__DIR__, "..", "collection", "$(collection_name).jsn")
+        download_project_infos(filepath_collection, collection_name)
+        project_id = extract_project_id(filepath_collection)
+        filepath_case = joinpath(@__DIR__, "..", "case", "$(collection_name).jsn")
+        casesID_values, casesNAME_values = getCasesForProject(filepath_case, project_id)
+
+        # Slides Management
+        if isdir(joinpath(path_to_save, "$collection_name"))
+            println("Update data ...")
+        else
+            mkdir(joinpath(path_to_save, "$collection_name"))
+        end
+        for (i, j) in zip(casesID_values, casesNAME_values)
+            single_casesID_values, single_casesNAME_values = getCasesForProject(filepath_case, i)
+            for (x, y) in zip(single_casesID_values, single_casesNAME_values)
+                if isdir(joinpath(path_to_save, "$(collection_name)", "$j"))
+                else
+                    mkdir(joinpath(path_to_save, "$(collection_name)", "$j"))
+                end
+                filepath_slides = joinpath(path_to_save, "$(collection_name)", "$j", "$(y).zip")
                 link_slides = "https://api.digitalslidearchive.org/api/v1/folder/$x/download"
 
                 download_zip(link_slides, filepath_slides)

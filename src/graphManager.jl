@@ -2,6 +2,8 @@ export weighted_graph_to_adjacency_matrix
 export weighted_graph_to_adjacency_matrix_weight
 export save_adjacency_matrix
 export region_adjacency_graph
+export extract_vertex_position
+export extract_vertex_color
 
 """
 `SegmentedImage` type contains the index-label mapping, assigned labels,
@@ -302,4 +304,44 @@ function save_adjacency_matrix(matrix::Matrix{Float32}, filepath_matrix::Abstrac
         write(f, "\n")
     end
     close(f)
+end
+
+"""
+    extract_vertex_position(G::MetaGraph)
+
+# Arguments:
+
+# Return value:
+
+# Notes:
+"""
+function extract_vertex_position(G::MetaGraph)
+    position_array = Luxor.Point[]
+    for v in vertices(g_meta)
+        s = get_prop(g_meta, v, :position_label)
+        coordinates_str = match(r"\((.*)\)", string(s)).captures[1]
+        coordinates = parse.(Int, split(coordinates_str, ", "))
+        x, y ,z = coordinates
+        point = Luxor.Point(y, x)
+        push!(position_array, point)
+    end
+    return position_array
+end
+
+"""
+    extract_vertex_color(G::MetaGraph)
+
+# Arguments:
+
+# Return value:
+
+# Notes:
+"""
+function extract_vertex_color(G::MetaGraph)
+    color_array = []
+    for v in vertices(g_meta)
+        color_float = get_prop(g_meta, v, :color_label)
+        push!(color_array, color_float)
+    end
+    return color_array
 end

@@ -147,4 +147,36 @@ function apply_segmentation_SOPHYSM(filepath_input::AbstractString, filepath_out
     # save segmented slide
     filepath_seg = replace(filepath_output, r"....$" => "_seg.png")
     save(filepath_seg, masked_colored_labels)
+
+    # build metagraph on images
+    filepath_background = replace(filepath_output, r"....$" => "_seg-0.png")
+    filepath_img_graph_vertex = replace(filepath_output, r"....$" => "_graph_vertex.png")
+    filepath_img_graph_edges = replace(filepath_output, r"....$" => "_graph_edges.png")
+    img_graph = Luxor.readpng(filepath_background)
+    w = img_graph.width
+    h = img_graph.height
+    g_meta = J_Space.spatial_graph(filepath_dataframe_edges, filepath_dataframe_labels)
+    # Image with Vertices
+    @png begin
+        Luxor.placeimage(img_graph, 0, 0, 0.8, centered=true)
+        sethue("slateblue")
+        Karnak.fontsize(7)
+        drawgraph(g_meta,
+            layout = extract_vertex_position(g_meta) .+ Karnak.Point(-w/2, -h/2),
+            vertexlabels = [get_prop(g_meta, v, :name) for v in vertices(g_meta)],
+            vertexfillcolors = extract_vertex_color(g_meta),
+            edgelines=:none
+        )
+    end w h filepath_img_graph_vertex
+    # Image with Edges
+    @png begin
+        Luxor.placeimage(img_graph, 0, 0, 0.8, centered=true)
+        sethue("slateblue")
+        Karnak.fontsize(7)
+        drawgraph(g_meta,
+            layout = extract_vertex_position(g_meta) .+ Karnak.Point(-w/2, -h/2),
+            vertexlabels = [get_prop(g_meta, v, :name) for v in vertices(g_meta)],
+            vertexfillcolors = extract_vertex_color(g_meta),
+        )
+    end w h filepath_img_graph_edges
 end
