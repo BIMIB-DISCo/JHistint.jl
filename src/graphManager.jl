@@ -317,8 +317,8 @@ end
 """
 function extract_vertex_position(G::MetaGraph)
     position_array = Luxor.Point[]
-    for v in Graphs.vertices(g_meta)
-        s = get_prop(g_meta, v, :position_label)
+    for v in Graphs.vertices(G)
+        s = get_prop(G, v, :position_label)
         coordinates_str = match(r"\((.*)\)", string(s)).captures[1]
         coordinates = parse.(Int, split(coordinates_str, ", "))
         x, y ,z = coordinates
@@ -339,8 +339,8 @@ end
 """
 function extract_vertex_color(G::MetaGraph)
     color_array = []
-    for v in Graphs.vertices(g_meta)
-        color_float = get_prop(g_meta, v, :color_label)
+    for v in Graphs.vertices(G)
+        color_float = get_prop(G, v, :color_label)
         push!(color_array, color_float)
     end
     return color_array
