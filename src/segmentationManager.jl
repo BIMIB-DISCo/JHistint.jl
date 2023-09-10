@@ -163,7 +163,7 @@ function apply_segmentation_SOPHYSM(filepath_input::AbstractString, filepath_out
         Karnak.fontsize(7)
         drawgraph(g_meta,
             layout = extract_vertex_position(g_meta) .+ Karnak.Point(-w/2, -h/2),
-            vertexlabels = [get_prop(g_meta, v, :name) for v in vertices(g_meta)],
+            vertexlabels = [get_prop(g_meta, v, :name) for v in Graphs.vertices(g_meta)],
             vertexfillcolors = extract_vertex_color(g_meta),
             edgelines=:none
         )
@@ -175,7 +175,7 @@ function apply_segmentation_SOPHYSM(filepath_input::AbstractString, filepath_out
         Karnak.fontsize(7)
         drawgraph(g_meta,
             layout = extract_vertex_position(g_meta) .+ Karnak.Point(-w/2, -h/2),
-            vertexlabels = [get_prop(g_meta, v, :name) for v in vertices(g_meta)],
+            vertexlabels = [get_prop(g_meta, v, :name) for v in Graphs.vertices(g_meta)],
             vertexfillcolors = extract_vertex_color(g_meta),
         )
     end w h filepath_img_graph_edges
