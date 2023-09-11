@@ -200,7 +200,7 @@ function download_single_collection_SOPHYSM(collection_name::AbstractString, pat
                 link_slides = "https://api.digitalslidearchive.org/api/v1/folder/$x/download"
                 download_zip(link_slides, filepath_slides)
                 filepath_svs = extract_slide(filepath_slides)
-                insert_record_DB(collection_name, j, i, y, x, link_slides, filepath_slides, filepath_svs)
+                insert_record_DB(collection_name, j, i, y, x, link_slides, filepath_slides, filepath_svs, path_to_save)
                 println("DOWNLOAD Slide complete: CASE NAME = $j - SLIDE ID = $y")
             end
         end
@@ -303,7 +303,7 @@ function download_all_collection_SOPHYSM(path_to_save::AbstractString)
 
                 download_zip(link_slides, filepath_slides)
                 filepath_svs = extract_slide(filepath_slides)
-                insert_record_DB(collection_name, j, i, y, x, link_slides, filepath_slides, filepath_svs)
+                insert_record_DB(collection_name, j, i, y, x, link_slides, filepath_slides, filepath_svs, path_to_save)
                 println("DOWNLOAD Slide complete: CASE NAME = $j - SLIDE ID = $y")
             end
         end
