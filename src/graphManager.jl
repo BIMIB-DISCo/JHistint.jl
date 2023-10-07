@@ -1,7 +1,14 @@
+### -*- Mode: Julia -*-
+
+### Graph Manager -- JHistint
+### graphManager.jl
+
+### Exported Functions
 export weighted_graph_to_adjacency_matrix
 export weighted_graph_to_adjacency_matrix_weight
 export save_adjacency_matrix
-export region_adjacency_graph
+export region_adjacency_graph_JHistint
+export build_dataframe_as_edgelist
 export extract_vertex_position
 export extract_vertex_color
 
@@ -28,20 +35,39 @@ _colon(I::CartesianIndex{N}, J::CartesianIndex{N}) where N =
     CartesianIndices(map((i,j) -> i:j, Tuple(I), Tuple(J)))
 
 """
-    G, vert_map = region_adjacency_graph(seg, weight_fn)
+    region_adjacency_graph_JHistint(s::SegmentedImage, weight_fn::Function)
 
-Constructs a region adjacency graph (RAG) from the `SegmentedImage`. It returns the RAG
-along with a Dict(label=>vertex) map. `weight_fn` is used to assign weights to the edges.
+Constructs a region adjacency graph (RAG) from the `SegmentedImage`. It returns
+the RAGalong with a Dict(label=>vertex) map and a dataframe containing the
+information about the label. `weight_fn` is used to assign weights to the edges.
 
-    weight_fn(label1, label2)
+# Arguments :
+- `s::SegmentedImage`: The input segmented image containing regions.
+- `weight_fn::Function`: A function that calculates the weight between
+two adjacent regions. The function should accept two region labels as arguments
+and return a numeric value representing the weight.
 
-Returns a real number corresponding to the weight of the edge between label1 and label2.
+# Return value :
+- `G::SimpleWeightedGraph`: The adjacency graph between regions with weights
+on the edges.
+- `vert_map::Dict{Int, Int}`: A dictionary that maps region labels to nodes
+in the graph.
+- `df_label::DataFrame`: A DataFrame containing information about regions,
+including their identifiers, positions, colors, and areas.
 
+# Notes:
+weight_fn(label1, label2): Returns a real number corresponding to the weight of
+the edge between label1 and label2.
 """
-function region_adjacency_graph(s::SegmentedImage, weight_fn::Function)
+function region_adjacency_graph_JHistint(s::SegmentedImage, weight_fn::Function)
 
-    function neighbor_regions!(df_cartesian_indices::AbstractArray, G::SimpleWeightedGraph, visited::AbstractArray, s::SegmentedImage, I::CartesianIndex)
-        # n = Set{Int} - visited = Array - s = segmented image - p = CartesianIndex which define neighbors
+    function neighbor_regions!(df_cartesian_indices::AbstractArray,
+                                G::SimpleWeightedGraph,
+                                visited::AbstractArray,
+                                s::SegmentedImage,
+                                I::CartesianIndex)
+        # n = Set{Int} - visited = Array - s = segmented image -
+        # p = CartesianIndex which define neighbors
         # R contains each possible index in s
         R = CartesianIndices(axes(s.image_indexmap))
         # I1 contains a Vector of only 1 with dimension equal to visited
@@ -57,35 +83,34 @@ function region_adjacency_graph(s::SegmentedImage, weight_fn::Function)
             temp = pop!(t)
             # set index temp to true
             visited[temp] = true
-            # _colon build an object CartesianIndices which include all the index from I to J (range) :
-            # _colon(I::CartesianIndex{N}, J::CartesianIndex{N}) where N =
-            #    CartesianIndices(map((i,j) -> i:j, Tuple(I), Tuple(J)))
+            # _colon build an object CartesianIndices which include
+            # all the index from I to J (range) :
             for J in _colon(max(Ibegin, temp-I1), min(Iend, temp+I1))
                 if s.image_indexmap[temp] != s.image_indexmap[J]
-                    # if s.image_indexmap[J] ∉ n
-                        # If the values are different, it means they have two different colorings for the two points,
-                        # therefore a neighbor has been identified, which is pushed into n.
-                        # push!(n,s.image_indexmap[J])
-                    if !Graphs.has_edge(G, vert_map[s.image_indexmap[I]], vert_map[s.image_indexmap[J]])
-                        Graphs.add_edge!(G, vert_map[s.image_indexmap[I]], vert_map[s.image_indexmap[J]], weight_fn(s.image_indexmap[I], s.image_indexmap[J]))
-                        # push!(added_indices, s.image_indexmap[J])
-                        # push!(n,s.image_indexmap[J])
+                    if !Graphs.has_edge(G, vert_map[s.image_indexmap[I]],
+                                            vert_map[s.image_indexmap[J]])
+                        Graphs.add_edge!(G, vert_map[s.image_indexmap[I]],
+                                            vert_map[s.image_indexmap[J]],
+                                            weight_fn(s.image_indexmap[I],
+                                            s.image_indexmap[J]))
                     end
                 elseif !visited[J]
-                    # If they are equal, I place them in t, so that,
-                    # as long as t is not empty, I can explore all the neighbors
-                    # that have the same color.
                     push!(t,J)
                 end
             end
         end
     end
     # Start
-    visited  = fill(false, axes(s.image_indexmap))                           # Array to mark the pixels that are already visited
-    G        = SimpleWeightedGraph()                                         # The region_adjacency_graph
-    vert_map = Dict{Int,Int}()                                               # Map that stores (label, vertex) pairs
+    # Array to mark the pixels that are already visited
+    visited  = fill(false, axes(s.image_indexmap))
+    # The region_adjacency_graph
+    G        = SimpleWeightedGraph()
+    # Map that stores (label, vertex) pairs
+    vert_map = Dict{Int,Int}()
     # Build object for label (vertex) dataframe
     df_label = DataFrame()
+    df_noisy_label = DataFrame()
+    df_total_label = DataFrame()
     df_cartesian_indices = []
     df_color_indices = []
     # add vertices to graph
@@ -95,38 +120,43 @@ function region_adjacency_graph(s::SegmentedImage, weight_fn::Function)
         vert_map[l] = i
     end
     # add edges to graph
-    # For each CartesianIndices in s where the image_indexmap represent the image wich is a Multidimensional Array
-    # The index of s.image_indexmap represent the pixel position in the segmented image
-    # The value of s.image_indexmap represent the pixel color in the segmented image
     for p in CartesianIndices(axes(s.image_indexmap))
-        # check if p of the segmented image s is not visited
         if !visited[p]
             push!(df_cartesian_indices, p)
-            # n = Set{Int16}()
-            # Call neighbor_regions where :
-            # n = Set{Int} - visited = Array - s = segmented image - p = CartesianIndex which define neighbors
             try
                 neighbor_regions!(df_cartesian_indices, G, visited, s, p)
             catch oom
                 if isa(oom, OutOfMemoryError)
-                    # n = Set{Int}()
                     GC.gc()
                     println(">>> OOM")
                     exit()
                 end
             end
-            # for i in n
-            #    Graphs.add_edge!(G, vert_map[s.image_indexmap[p]], vert_map[i], weight_fn(s.image_indexmap[p], i))
-            # end
         end
     end
 
     for i in s.segment_labels
         push!(df_color_indices, s.segment_means[i])
     end
-    df_label.label = s.segment_labels
-    df_label.position_label = df_cartesian_indices
-    df_label.color_label = df_color_indices
+
+    # Filter noisy segments from segmentation
+    # Building object for DataFrame df_label
+    df_label_filtered = Int[]
+    df_cartesian_indices_filtered = CartesianIndex[]
+    df_color_indices_filtered = []
+    df_area_filtered = Int[]
+    for i in 1:length(s.segment_labels)
+        if(s.segment_pixel_count[i] > 3000)
+            push!(df_label_filtered, s.segment_labels[i])
+            push!(df_cartesian_indices_filtered, df_cartesian_indices[i])
+            push!(df_color_indices_filtered, df_color_indices[i])
+            push!(df_area_filtered, s.segment_pixel_count[i])
+        end
+    end
+    df_label.label = df_label_filtered
+    df_label.position_label = df_cartesian_indices_filtered
+    df_label.color_label = df_color_indices_filtered
+    df_label.area = df_area_filtered
     G, vert_map, df_label
 end
 
@@ -134,18 +164,22 @@ end
 """
     weighted_graph_to_adjacency_matrix(G::SimpleWeightedGraph{Int64, Float64}, n::Int64)
 
-Converts a weighted graph represented as a `SimpleWeightedGraph` into an unweighted boolean adjacency matrix.
+Converts a weighted graph represented as a `SimpleWeightedGraph`
+into an unweighted boolean adjacency matrix.
 
 # Arguments:
-- `G::SimpleWeightedGraph{Int64, Float64}`: Weighted graph represented as a `SimpleWeightedGraph` with integer vertex labels and floating-point edge weights.
+- `G::SimpleWeightedGraph{Int64, Float64}`: Weighted graph represented as a
+`SimpleWeightedGraph` with integer vertex labels and floating-point edge weights.
 - `n::Int64`: Number of nodes in the adjacency matrix.
 
 # Return value:
 - `adjacency_matrix`: `Matrix{Int64}` boolean adjacency matrix.
 
 # Notes:
-The function returns an `n` x `n` adjacency matrix representing the unweighted graph. If nodes `i` and `j` are adjacent,
-the adjacency matrix will contain a value of `1` at position `(i,j)` and `(j,i)`. Otherwise, the adjacency matrix will contain a value of `0`.
+The function returns an `n` x `n` adjacency matrix representing the unweighted graph.
+If nodes `i` and `j` are adjacent,the adjacency matrix will contain a value of
+`1` at position `(i,j)` and `(j,i)`. Otherwise, the adjacency matrix will
+contain a value of `0`.
 """
 function weighted_graph_to_adjacency_matrix(G::SimpleWeightedGraph{Int64, Float64}, n::Int64)
     adjacency_matrix = zeros(Int, n, n)
@@ -163,11 +197,22 @@ end
 """
     weighted_graph_to_adjacency_matrix_weight(G::SimpleWeightedGraph{Int64, Float64}, n::Int64)
 
+Converts a weighted graph represented as a `SimpleWeightedGraph`
+into an weighted adjacency matrix.
+
 # Arguments:
+- `G::SimpleWeightedGraph{Int64, Float64}`: Weighted graph represented as a
+`SimpleWeightedGraph` with integer vertex labels and floating-point edge weights.
+- `n::Int64`: Number of nodes in the adjacency matrix.
 
 # Return value:
+- `adjacency_matrix`: `Matrix{Float32}` boolean adjacency matrix.
 
 # Notes:
+The function returns an `n` x `n` adjacency matrix representing the weighted graph.
+If nodes `i` and `j` are adjacent,the adjacency matrix will contain a value
+associated with the edge weight at position `(i,j)` and `(j,i)`.
+Otherwise, the adjacency matrix will contain a value of `-1`.
 """
 function weighted_graph_to_adjacency_matrix_weight(G::SimpleWeightedGraph{Int64, Float64}, n::Int64)
     adjacency_matrix = zeros(Float32, n, n)
@@ -191,15 +236,30 @@ end
 
 
 """
-    build_dataframe_as_edgelist(mat::Matrix{Int64})
+    build_dataframe_as_edgelist(mat::Matrix{Int64}, label_list::Vector{Int64})
+
+Builds a DataFrame representing an edge list from an input adjacency matrix `mat`
+and a list of labels `label_list`.
 
 # Arguments:
+- `mat::Matrix{Int64}`: The input adjacency matrix where elements represent
+connections between nodes.
+- `label_list::Vector{Int64}`: A list of node labels to consider when
+constructing the edge list.
 
 # Return value:
+- `df::DataFrame`: A DataFrame representing the edges in the graph,
+with columns 'origin', 'destination', and 'weight' indicating the source node,
+target node, and edge weight, respectively.
 
 # Notes:
+The `build_dataframe_as_edgelist` function constructs a DataFrame that
+represents the edges in a graph based on the adjacency matrix `mat`.
+It iterates through the upper triangular part of the matrix and adds edges to
+the DataFrame for non-zero values while considering only nodes
+with labels present in `label_list`.
 """
-function build_dataframe_as_edgelist(mat::Matrix{Int64})
+function build_dataframe_as_edgelist(mat::Matrix{Int64}, label_list::Vector{Int64})
     df = DataFrame()
     df_origin_column = []
     df_destination_column = []
@@ -207,7 +267,7 @@ function build_dataframe_as_edgelist(mat::Matrix{Int64})
     n = size(mat, 1)
     for i in 1:n
         for j in 1:i
-            if mat[i,j] != -1
+            if mat[i,j] != 0 && i in label_list && j in label_list
                 push!(df_origin_column, i)
                 push!(df_destination_column, j)
                 push!(df_weight_column, mat[i,j])
@@ -221,15 +281,30 @@ function build_dataframe_as_edgelist(mat::Matrix{Int64})
 end
 
 """
-    build_dataframe_as_edgelist(mat::Matrix{Float32})
+    build_dataframe_as_edgelist(mat::Matrix{Float32}, label_list::Vector{Int64})
+
+Builds a DataFrame representing an edge list from an input adjacency matrix `mat`
+and a list of labels `label_list`.
 
 # Arguments:
+- `mat::Matrix{Float32}`: The input adjacency matrix where elements represent
+connections between nodes. In this case, the matrix has Float value.
+- `label_list::Vector{Int64}`: A list of node labels to consider when
+constructing the edge list.
 
 # Return value:
+- `df::DataFrame`: A DataFrame representing the edges in the graph,
+with columns 'origin', 'destination', and 'weight' indicating the source node,
+target node, and edge weight, respectively.
 
 # Notes:
+The `build_dataframe_as_edgelist` function constructs a DataFrame that
+represents the edges in a graph based on the adjacency matrix `mat`.
+It iterates through the upper triangular part of the matrix and adds edges to
+the DataFrame for values different from `-1` while considering only nodes
+with labels present in `label_list`.
 """
-function build_dataframe_as_edgelist(mat::Matrix{Float32})
+function build_dataframe_as_edgelist(mat::Matrix{Float32}, label_list::Vector{Int64})
     df = DataFrame()
     df_origin_column = []
     df_destination_column = []
@@ -237,7 +312,7 @@ function build_dataframe_as_edgelist(mat::Matrix{Float32})
     n = size(mat, 1)
     for i in 1:n
         for j in 1:i
-            if mat[i,j] != -1
+            if mat[i,j] != -1 && i in label_list && j in label_list
                 push!(df_origin_column, i)
                 push!(df_destination_column, j)
                 push!(df_weight_column, mat[i,j])
@@ -249,19 +324,23 @@ function build_dataframe_as_edgelist(mat::Matrix{Float32})
     df.weight = df_weight_column
     return df
 end
+
 
 """
     save_adjacency_matrix(matrix::Matrix{Int64}, filepath_matrix::AbstractString)
 
-Function to save an adjacency matrix represented as an integer matrix to a text file.
+Function to save an adjacency matrix represented as an integer matrix to a
+text file.
 
 # Arguments:
 - `matrix::Matrix{Int64}`: The integer matrix representing the adjacency matrix.
-- `filepath_matrix::AbstractString`: The file path represented as a string indicating where to save the matrix.
+- `filepath_matrix::AbstractString`: The file path represented as a string
+indicating where to save the matrix.
 
 # Notes
-The function opens the file specified by the `filepath_matrix` path in write mode and writes the matrix in adjacency matrix format,
-where each row represents the adjacent nodes of a node. The numbers in the matrix are separated by spaces.
+The function opens the file specified by the `filepath_matrix` path in write
+mode and writes the matrix in adjacency matrix format, where each row represents
+the adjacent nodes of a node. The numbers in the matrix are separated by spaces.
 """
 function save_adjacency_matrix(matrix::Matrix{Int64}, filepath_matrix::AbstractString)
     # Open txt file
@@ -283,11 +362,18 @@ end
 """
     save_adjacency_matrix(matrix::Matrix{Float32}, filepath_matrix::AbstractString)
 
+Function to save an adjacency matrix represented as a float matrix to a
+text file.
+
 # Arguments:
+- `matrix::Matrix{Float32}`: The float matrix representing the adjacency matrix.
+- `filepath_matrix::AbstractString`: The file path represented as a string
+indicating where to save the matrix.
 
-# Return value:
-
-# Notes:
+# Notes
+The function opens the file specified by the `filepath_matrix` path in write
+mode and writes the matrix in adjacency matrix format, where each row represents
+the adjacent nodes of a node. The numbers in the matrix are separated by spaces.
 """
 function save_adjacency_matrix(matrix::Matrix{Float32}, filepath_matrix::AbstractString)
     # Open txt file
@@ -309,11 +395,15 @@ end
 """
     extract_vertex_position(G::MetaGraph)
 
+Extracts the vertex positions from a MetaGraph `G`.
+
 # Arguments:
+- `G::MetaGraph`: The input MetaGraph containing vertices with
+associated positions.
 
 # Return value:
-
-# Notes:
+- `position_array::Vector{Luxor.Point}`: An array containing `Luxor.Points`
+representing the positions of the vertices in `G`.
 """
 function extract_vertex_position(G::MetaGraph)
     position_array = Luxor.Point[]
@@ -331,11 +421,14 @@ end
 """
     extract_vertex_color(G::MetaGraph)
 
+Extracts the vertex colors from a MetaGraph `G`.
+
 # Arguments:
+- `G::MetaGraph`: The input MetaGraph containing vertices with associated colors.
 
 # Return value:
-
-# Notes:
+- `color_array::Vector{Any}`: An array containing the extracted color
+information associated with the vertices in `G`.
 """
 function extract_vertex_color(G::MetaGraph)
     color_array = []
@@ -345,3 +438,5 @@ function extract_vertex_color(G::MetaGraph)
     end
     return color_array
 end
+
+### end of file -- graphManager.jl

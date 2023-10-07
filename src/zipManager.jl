@@ -1,3 +1,9 @@
+### -*- Mode: Julia -*-
+
+### Zip Manager -- JHistint
+### zipManager.jl
+
+### Exported Functions
 export extract_slide
 
 """
@@ -6,7 +12,8 @@ export extract_slide
 Function to extract the contents of `.zip` files downloaded from CDSA.
 
 # Arguments
-- `filepath_zip::AbstractString` = Path where the `.zip` file for the individual case is saved.
+- `filepath_zip::AbstractString` = Path where the `.zip` file for
+the individual case is saved.
 """
 function extract_slide(filepath_zip::AbstractString)
     dest_path = ""
@@ -30,3 +37,5 @@ function extract_slide(filepath_zip::AbstractString)
     close(archive)
     return dest_path
 end
+
+### end of file -- zipManager.jl
