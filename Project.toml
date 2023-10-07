@@ -2,7 +2,7 @@ name = "JHistint"
 uuid = "f9cb9bd9-7498-4774-9389-dea22f18ae4d"
 authors = ["niccolo_mandelli <n.mandelli2@campus.unimib.it>"]
 repo = "https://github.com/niccolo99mandelli/JHistint.jl.git"
-version = "0.1.4"
+version = "0.1.5"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
