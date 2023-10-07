@@ -18,6 +18,9 @@ using LightGraphs
 using SimpleWeightedGraphs
 using CSV
 using J_Space
+using Luxor
+using Karnak
+using MetaGraphs
 
 makedocs(
     sitename = "JHistint Documentation",
