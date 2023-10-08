@@ -226,6 +226,9 @@ function apply_segmentation_SOPHYSM_tessellation(filepath_input::AbstractString,
     svs_image = read(filepath_input)
     img = ImageMagick.load_(svs_image)
     bw = Gray.(img) .> thresholdGray
+    # define img dimensions
+    width = size(img, 1)
+    height = size(img, 2)
     dist = 1 .- distance_transform(feature_transform(bw))
     markers = label_components(dist .< thresholdMarker)
     # watershed
