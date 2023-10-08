@@ -82,8 +82,13 @@ Returns a real number corresponding to the weight of the edge between label1 and
 """
 function region_adjacency_graph(s::SegmentedImage, weight_fn::Function)
 
-    function neighbor_regions!(df_cartesian_indices::AbstractArray, G::SimpleWeightedGraph, visited::AbstractArray, s::SegmentedImage, I::CartesianIndex)
-        # n = Set{Int} - visited = Array - s = segmented image - p = CartesianIndex which define neighbors
+    function neighbor_regions!(df_cartesian_indices::AbstractArray,
+                                G::SimpleWeightedGraph,
+                                visited::AbstractArray,
+                                s::SegmentedImage,
+                                I::CartesianIndex)
+        # n = Set{Int} - visited = Array - s = segmented image -
+        # p = CartesianIndex which define neighbors
         # R contains each possible index in s
         R = CartesianIndices(axes(s.image_indexmap))
         # I1 contains a Vector of only 1 with dimension equal to visited
@@ -99,33 +104,30 @@ function region_adjacency_graph(s::SegmentedImage, weight_fn::Function)
             temp = pop!(t)
             # set index temp to true
             visited[temp] = true
-            # _colon build an object CartesianIndices which include all the index from I to J (range) :
-            # _colon(I::CartesianIndex{N}, J::CartesianIndex{N}) where N =
-            #    CartesianIndices(map((i,j) -> i:j, Tuple(I), Tuple(J)))
+            # _colon build an object CartesianIndices which include
+            # all the index from I to J (range) :
             for J in _colon(max(Ibegin, temp-I1), min(Iend, temp+I1))
                 if s.image_indexmap[temp] != s.image_indexmap[J]
-                    # if s.image_indexmap[J] ∉ n
-                        # If the values are different, it means they have two different colorings for the two points,
-                        # therefore a neighbor has been identified, which is pushed into n.
-                        # push!(n,s.image_indexmap[J])
-                    if !Graphs.has_edge(G, vert_map[s.image_indexmap[I]], vert_map[s.image_indexmap[J]])
-                        Graphs.add_edge!(G, vert_map[s.image_indexmap[I]], vert_map[s.image_indexmap[J]], weight_fn(s.image_indexmap[I], s.image_indexmap[J]))
-                        # push!(added_indices, s.image_indexmap[J])
-                        # push!(n,s.image_indexmap[J])
+                    if !Graphs.has_edge(G, vert_map[s.image_indexmap[I]],
+                                            vert_map[s.image_indexmap[J]])
+                        Graphs.add_edge!(G, vert_map[s.image_indexmap[I]],
+                                            vert_map[s.image_indexmap[J]],
+                                            weight_fn(s.image_indexmap[I],
+                                            s.image_indexmap[J]))
                     end
                 elseif !visited[J]
-                    # If they are equal, I place them in t, so that,
-                    # as long as t is not empty, I can explore all the neighbors
-                    # that have the same color.
                     push!(t,J)
                 end
             end
         end
     end
     # Start
-    visited  = fill(false, axes(s.image_indexmap))                           # Array to mark the pixels that are already visited
-    # G        = SimpleWeightedGraph()                                         # The region_adjacency_graph
-    # vert_map = Dict{Int,Int}()                                               # Map that stores (label, vertex) pairs
+    # Array to mark the pixels that are already visited
+    visited  = fill(false, axes(s.image_indexmap))
+    # The region_adjacency_graph
+    G        = SimpleWeightedGraph()
+    # Map that stores (label, vertex) pairs
+    vert_map = Dict{Int,Int}()
     # Build object for label (vertex) dataframe
     df_label = DataFrame()
     df_noisy_label = DataFrame()
@@ -133,19 +135,24 @@ function region_adjacency_graph(s::SegmentedImage, weight_fn::Function)
     df_cartesian_indices = []
     df_color_indices = []
     # add vertices to graph
-    # Graphs.add_vertices!(G,length(s.segment_labels))
+    Graphs.add_vertices!(G,length(s.segment_labels))
     # setup `vert_map`
-    # for (i,l) in enumerate(s.segment_labels)
-    #    vert_map[l] = i
-    # end
+    for (i,l) in enumerate(s.segment_labels)
+        vert_map[l] = i
+    end
     # add edges to graph
-    # For each CartesianIndices in s where the image_indexmap represent the image wich is a Multidimensional Array
-    # The index of s.image_indexmap represent the pixel position in the segmented image
-    # The value of s.image_indexmap represent the pixel color in the segmented image
     for p in CartesianIndices(axes(s.image_indexmap))
-        # check if p of the segmented image s is not visited
         if !visited[p]
             push!(df_cartesian_indices, p)
+            try
+                neighbor_regions!(df_cartesian_indices, G, visited, s, p)
+            catch oom
+                if isa(oom, OutOfMemoryError)
+                    GC.gc()
+                    println(">>> OOM")
+                    exit()
+                end
+            end
         end
     end
 
@@ -205,8 +212,9 @@ function region_adjacency_graph(s::SegmentedImage, weight_fn::Function)
     df_total_label.color_label = df_color_indices_total
     df_total_label.area = df_area_total
 
-    df_label, df_noisy_label, df_total_label
+    G, vert_map, df_label, df_noisy_label, df_total_label
 end
+
 
 """
     compute_centroid_total_cells(s::SegmentedImage, df_label::DataFrame)
@@ -948,8 +956,9 @@ end
 
 function extract_vertex_position(G::MetaGraph)
     position_array = Luxor.Point[]
-    for v in Graphs.vertices(g_meta)
-        s = get_prop(g_meta, v, :centroid)
+    for v in Graphs.vertices(G)
+        s = get_prop(G, v, :centroid)
+        show(s)
         coordinates_str = match(r"\((.*)\)", string(s)).captures[1]
         coordinates = parse.(Int, split(coordinates_str, ", "))
         x, y ,z = coordinates
@@ -970,7 +979,7 @@ function extract_vertex_color(G::MetaGraph)
 end
 
 
-link = joinpath(@__DIR__, "..", "input_example_demo", "slideExample1", "SlideExample_mini_1.tif")
+link = joinpath(@__DIR__, "..", "..", "input_example_demo", "slideExample1", "SlideExample_mini_1.tif")
 # load slide
 println("LOAD SLIDE ...")
 svs_image = read(link)
@@ -1000,7 +1009,7 @@ df_noisy_labels = DataFrame()
 df_total_labels = DataFrame()
 df_edges = DataFrame()
 
-df_labels, df_noisy_labels, df_total_labels = region_adjacency_graph(segments, weight_fn)
+G, vert_map, df_labels, df_noisy_labels, df_total_labels = region_adjacency_graph(segments, weight_fn)
 # define centroid
 # df_labels = compute_centroid_cells(segments, df_labels)
 # df_noisy_labels = compute_centroid_noisy_cells(segments, df_noisy_labels)
@@ -1017,7 +1026,7 @@ df_edges, edges = build_graph_from_grid(df_labels, df_noisy_labels, df_total_lab
 
 # save dataframe label as .CSV
 filepath_dataframe_labels = replace(link, r"....$" => "_dataframe_labels.csv")
-CSV.write(filepath_dataframe_labels, df_total_labels)
+CSV.write(filepath_dataframe_labels, df_labels)
 # build and save adjacency matrix
 println("BUILD ADJACENCY MATRIX ...")
 # matrix = weighted_graph_to_adjacency_matrix_weight(G, nvertices)
@@ -1042,6 +1051,7 @@ w = img_graph.width
 h = img_graph.height
 
 # J-Space (temp metagraph for building img on graph)
+show(df_labels)
 g_meta = spatial_graph(filepath_dataframe_edges, filepath_dataframe_labels)
 # Plot metagraph on slide
 # Image with Vertices

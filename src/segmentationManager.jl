@@ -278,17 +278,17 @@ function apply_segmentation_SOPHYSM_tessellation(filepath_input::AbstractString,
     img_graph = Luxor.readpng(filepath_background)
     w = img_graph.width
     h = img_graph.height
-    g_meta_labels = J_Space.spatial_graph(filepath_dataframe_edges, filepath_dataframe_labels)
+    # g_meta_labels = J_Space.spatial_graph(filepath_dataframe_edges, filepath_dataframe_labels)
     g_meta_total_labels = J_Space.spatial_graph(filepath_dataframe_edges, filepath_dataframe_total_labels)
     # Image with Vertices
     @png begin
         Luxor.placeimage(img_graph, 0, 0, 0.8, centered=true)
         sethue("slateblue")
         Karnak.fontsize(7)
-        drawgraph(g_meta_labels,
-            layout = extract_vertex_position(g_meta_labels) .+ Karnak.Point(-w/2, -h/2),
-            vertexlabels = [get_prop(g_meta_labels, v, :name) for v in Graphs.vertices(g_meta_labels)],
-            vertexfillcolors = extract_vertex_color(g_meta_labels),
+        drawgraph(g_meta_total_labels,
+            layout = extract_vertex_position(g_meta_total_labels) .+ Karnak.Point(-w/2, -h/2),
+            vertexlabels = [get_prop(g_meta_total_labels, v, :name) for v in Graphs.vertices(g_meta_total_labels)],
+            vertexfillcolors = extract_vertex_color(g_meta_total_labels),
             edgelines=:none
         )
     end w h filepath_img_graph_vertex
