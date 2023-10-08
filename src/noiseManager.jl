@@ -58,7 +58,7 @@ function compute_centroid_total_cells(s::SegmentedImage,
                     end
                 end
                 # manual threshold for cells dimension in pixel (delete noise)
-                if(s.segment_pixel_count[s.image_indexmap[p]] > minima_threshold)
+                if(s.segment_pixel_count[s.image_indexmap[p]] > min_threshold)
                     centroid = div(s.segment_pixel_count[s.image_indexmap[p]], 2)
                     if(!(df_cells_indices[centroid] in df_centroids))
                         push!(df_label_list, s.image_indexmap[p])

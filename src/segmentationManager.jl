@@ -359,9 +359,14 @@ function apply_segmentation_SOPHYSM_graph(filepath_input::AbstractString,
     # build dataframe
     weight_fn(i,j) = euclidean(segment_pixel_count(segments,i), segment_pixel_count(segments,j))
     df_label = DataFrame()
-    G, vert_map, df_label = region_adjacency_graph_JHistint(segments, weight_fn)
+    df_noisy_labels = DataFrame()
+    df_total_labels = DataFrame()
+    G, vert_map, df_label, df_noisy_labels, df_total_labels = region_adjacency_graph_JHistint(segments, weight_fn, min_threshold, max_threshold)
     nvertices = length(vert_map)
-    df_label = compute_centroid_cells(segments, df_label, max_threshold)
+    # define centroids
+    df_total_labels = compute_centroid_total_cells(segments, df_total_labels, min_threshold)
+    df_label = filter_dataframe_cells(df_total_labels, max_threshold)
+    # define matrix
     matrix = weighted_graph_to_adjacency_matrix(G, nvertices)
     filepath_matrix = replace(filepath_output, ".tif" => ".txt")
     save_adjacency_matrix(matrix, filepath_matrix)

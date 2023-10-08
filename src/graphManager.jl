@@ -35,7 +35,8 @@ _colon(I::CartesianIndex{N}, J::CartesianIndex{N}) where N =
     CartesianIndices(map((i,j) -> i:j, Tuple(I), Tuple(J)))
 
 """
-    region_adjacency_graph_JHistint(s::SegmentedImage, weight_fn::Function)
+    region_adjacency_graph_JHistint(s::SegmentedImage, weight_fn::Function,
+                                min_threshold::Float32, max_threshold::Float32)
 
 Constructs a region adjacency graph (RAG) from the `SegmentedImage`. It returns
 the RAGalong with a Dict(label=>vertex) map and a dataframe containing the
@@ -59,7 +60,8 @@ including their identifiers, positions, colors, and areas.
 weight_fn(label1, label2): Returns a real number corresponding to the weight of
 the edge between label1 and label2.
 """
-function region_adjacency_graph_JHistint(s::SegmentedImage, weight_fn::Function)
+function region_adjacency_graph_JHistint(s::SegmentedImage, weight_fn::Function,
+                                min_threshold::Float32, max_threshold::Float32)
 
     function neighbor_regions!(df_cartesian_indices::AbstractArray,
                                 G::SimpleWeightedGraph,
@@ -145,19 +147,53 @@ function region_adjacency_graph_JHistint(s::SegmentedImage, weight_fn::Function)
     df_cartesian_indices_filtered = CartesianIndex[]
     df_color_indices_filtered = []
     df_area_filtered = Int[]
+
+    df_label_filtered_extra = Int[]
+    df_cartesian_indices_filtered_extra = CartesianIndex[]
+    df_color_indices_filtered_extra = []
+    df_area_filtered_extra = Int[]
+
+    df_label_total = Int[]
+    df_cartesian_indices_total = CartesianIndex[]
+    df_color_indices_total = []
+    df_area_total = Int[]
     for i in 1:length(s.segment_labels)
-        if(s.segment_pixel_count[i] > 3000)
+        if(s.segment_pixel_count[i] > max_threshold)
             push!(df_label_filtered, s.segment_labels[i])
             push!(df_cartesian_indices_filtered, df_cartesian_indices[i])
             push!(df_color_indices_filtered, df_color_indices[i])
             push!(df_area_filtered, s.segment_pixel_count[i])
+        end
+        if(s.segment_pixel_count[i] <= max_threshold &&
+            s.segment_pixel_count[i] > min_threshold)
+            push!(df_label_filtered_extra, s.segment_labels[i])
+            push!(df_cartesian_indices_filtered_extra, df_cartesian_indices[i])
+            push!(df_color_indices_filtered_extra, df_color_indices[i])
+            push!(df_area_filtered_extra, s.segment_pixel_count[i])
+        end
+        if(s.segment_pixel_count[i] > min_threshold)
+            push!(df_label_total, s.segment_labels[i])
+            push!(df_cartesian_indices_total, df_cartesian_indices[i])
+            push!(df_color_indices_total, df_color_indices[i])
+            push!(df_area_total, s.segment_pixel_count[i])
         end
     end
     df_label.label = df_label_filtered
     df_label.position_label = df_cartesian_indices_filtered
     df_label.color_label = df_color_indices_filtered
     df_label.area = df_area_filtered
-    G, vert_map, df_label
+
+    df_noisy_label.label = df_label_filtered_extra
+    df_noisy_label.position_label = df_cartesian_indices_filtered_extra
+    df_noisy_label.color_label = df_color_indices_filtered_extra
+    df_noisy_label.area = df_area_filtered_extra
+
+    df_total_label.label = df_label_total
+    df_total_label.position_label = df_cartesian_indices_total
+    df_total_label.color_label = df_color_indices_total
+    df_total_label.area = df_area_total
+
+    G, vert_map, df_label, df_noisy_label, df_total_label
 end
 
 
