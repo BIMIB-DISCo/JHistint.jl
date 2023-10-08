@@ -444,7 +444,7 @@ representing the positions of the vertices in `G`.
 function extract_vertex_position(G::MetaGraph)
     position_array = Luxor.Point[]
     for v in Graphs.vertices(G)
-        s = get_prop(G, v, :position_label)
+        s = get_prop(G, v, :centroid)
         coordinates_str = match(r"\((.*)\)", string(s)).captures[1]
         coordinates = parse.(Int, split(coordinates_str, ", "))
         x, y ,z = coordinates

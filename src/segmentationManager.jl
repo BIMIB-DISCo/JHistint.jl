@@ -151,8 +151,8 @@ function apply_segmentation_with_download(slide_info::Tuple{String, Vector{UInt8
     filepath_img_graph_edges = replace(slide_info[3], r"....$" => "_graph_edges.png")
     save(filepath_seg_png, masked_colored_labels)
     img_graph = Luxor.readpng(filepath_background)
-    w = img_graph.width
-    h = img_graph.height
+    w = img_graph.Images.width
+    h = img_graph.Images.height
     g_meta = J_Space.spatial_graph(filepath_dataframe_edges, filepath_dataframe_labels)
     # Image with Vertices
     @png begin
@@ -249,7 +249,7 @@ function apply_segmentation_SOPHYSM_tessellation(filepath_input::AbstractString,
     # build tessellation
     filepath_total_tess = replace(filepath_output, r"....$" => "_total_tessellation.png")
     filepath_cell_tess = replace(filepath_output, r"....$" => "_cell_tessellation.png")
-    df_edges, edges = build_graph_from_grid(df_labels, df_noisy_labels, df_total_labels, width, height, filepath_total_tess, filepath_cell_tess)
+    df_edges, edges = build_graph_from_tessellation(df_labels, df_noisy_labels, df_total_labels, width, height, filepath_total_tess, filepath_cell_tess)
     # save dataframe label as .CSV
     filepath_dataframe_labels = replace(filepath_output, r"....$" => "_dataframe_labels.csv")
     CSV.write(filepath_dataframe_labels, df_labels)
@@ -273,8 +273,8 @@ function apply_segmentation_SOPHYSM_tessellation(filepath_input::AbstractString,
     filepath_img_graph_vertex = replace(filepath_output, r"....$" => "_graph_vertex.png")
     filepath_img_graph_edges = replace(filepath_output, r"....$" => "_graph_edges.png")
     img_graph = Luxor.readpng(filepath_background)
-    w = img_graph.width
-    h = img_graph.height
+    w = img_graph.Images.width
+    h = img_graph.Images.height
     g_meta_labels = J_Space.spatial_graph(filepath_dataframe_edges, filepath_dataframe_labels)
     g_meta_total_labels = J_Space.spatial_graph(filepath_dataframe_edges, filepath_dataframe_total_labels)
     # Image with Vertices
@@ -381,8 +381,8 @@ function apply_segmentation_SOPHYSM_graph(filepath_input::AbstractString,
     filepath_img_graph_edges = replace(filepath_output, r"....$" => "_graph_edges.png")
     save(filepath_seg_png, masked_colored_labels)
     img_graph = Luxor.readpng(filepath_background)
-    w = img_graph.width
-    h = img_graph.height
+    w = img_graph.Images.width
+    h = img_graph.Images.height
     g_meta = J_Space.spatial_graph(filepath_dataframe_edges, filepath_dataframe_labels)
     # Image with Vertices
     @png begin
