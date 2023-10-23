@@ -68,6 +68,17 @@ The available collections are:
 To download a specific collection, just indicate the name of the collection: `BRCA`, `OV`, `LUAD`.
 
 ## Package Installation
+- Step 1 - Install `J-Space` from `spatial-input` branch:
+```
+(@v1.8) pkg > add https://github.com/BIMIB-DISCo/J-Space.jl.git#spatial-input
+```
+- Step 2 - Install `JHistint` from GitHub Repository:
+```
+(@v1.8) pkg > add https://github.com/niccolo99mandelli/JHistint.jl.git
+julia > using JHistint
+```
+
+## Package Installation Julia Registries (In Progress)
 The `JHistint` package is available in the Julia Registries and can be installed as follows:
 ```
 julia > using Pkg
@@ -77,7 +88,7 @@ julia > using JHistint
 Otherwise, type `]` in the Julia REPL and execute:
 ```
 (@v1.8) pkg > add JHistint
-(@v1.8) pkg > using JHistint
+julia > using JHistint
 ```
 
 ## Download Slides Main Functions (JHistint.jl)
@@ -154,7 +165,8 @@ apply_segmentation_SOPHYSM_graph(filepath_input::AbstractString,
 ```
 ## Support Functions for Graph (graphManager.jl)
 ```@docs
-region_adjacency_graph_JHistint(s::SegmentedImage, weight_fn::Function)
+region_adjacency_graph_JHistint(s::SegmentedImage, weight_fn::Function,
+                                min_threshold::Float32, max_threshold::Float32)
 ```
 
 ```@docs
