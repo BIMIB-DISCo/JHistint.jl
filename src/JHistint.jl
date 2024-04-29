@@ -23,7 +23,6 @@ using Graphs
 using LightGraphs
 using SimpleWeightedGraphs
 using CSV
-using J_Space
 using Luxor
 using Karnak
 using MetaGraphs
@@ -33,15 +32,15 @@ using GeometryBasics
 
 ### Exported Functions
 export download_single_collection
-export download_single_collection_SOPHYSM
 export download_all_collection
-export download_all_collection_SOPHYSM
 export slide_cell_segmentation_without_download
 export slide_cell_segmentation_with_download
 export start_segmentation_SOPHYSM_tessellation
 export start_segmentation_SOPHYSM_graph
 
 ### Included Files
+include("DirectoryManager.jl")
+
 include("apiManager.jl")
 include("dbManager.jl")
 include("zipManager.jl")
@@ -52,124 +51,7 @@ include("tessellationManager.jl")
 
 ### Main Functions
 """
-    download_single_collection(collection_name::AbstractString)
-
-Function for downloading histological slides associated with a
-collection available in TCGA.
-
-# Arguments
-- `collection_name::AbstractString` = Collection of TCGA data to download
-the histological slides.
-
-# Notes
-The function evaluates the `collection_name` argument, and in case of an
-invalid collection, considers the configuration in the `Config.toml` file.
-The value set in the package is `default`.
-```julia
-# Examples with valid input
-julia> JHistint.download_single_collection("acc")
-julia> JHistint.download_single_collection("bLca")
-```
-```julia
-# Examples with invalid input
-julia> JHistint.download_single_collection("ac")
-julia> JHistint.download_single_collection("")
-```
-"""
-function download_single_collection(collection_name::AbstractString)
-    # Check the value of the parameter
-    filepath_collection = joinpath(@__DIR__, "..", "collection", "collectionlist.jsn")
-    download_collection_values(filepath_collection)
-    collection_list = extract_collection_values(filepath_collection)
-
-    if lowercase(collection_name) in collection_list
-
-        collection_name = lowercase(collection_name)
-        # Project Management (TCGA-OR-A5J1, TCGA-OR-A5J2, etc.)
-        filepath_collection = joinpath(@__DIR__, "..", "collection",
-                                        "$(collection_name).jsn")
-        download_project_infos(filepath_collection, collection_name)
-        project_id = extract_project_id(filepath_collection)
-        filepath_case = joinpath(@__DIR__, "..", "case", "$(collection_name).jsn")
-        casesID_values, casesNAME_values = getCasesForProject(filepath_case,
-                                                                project_id)
-
-        # Slides Management
-        if isdir(joinpath(@__DIR__, "..", "slides", "$collection_name"))
-            println("Update data ...")
-        else
-            mkdir(joinpath(@__DIR__, "..", "slides", "$collection_name"))
-        end
-        for (i, j) in zip(casesID_values, casesNAME_values)
-            single_casesID_values, single_casesNAME_values = getCasesForProject(filepath_case, i)
-            for (x, y) in zip(single_casesID_values, single_casesNAME_values)
-                if isdir(joinpath(@__DIR__, "..", "slides", "$(collection_name)", "$j"))
-                else
-                    mkdir(joinpath(@__DIR__, "..", "slides", "$(collection_name)", "$j"))
-                end
-                filepath_slides = joinpath(@__DIR__, "..", "slides", "$(collection_name)", "$j", "$(y).zip")
-                link_slides = "https://api.digitalslidearchive.org/api/v1/folder/$x/download"
-                download_zip(link_slides, filepath_slides)
-                filepath_svs = extract_slide(filepath_slides)
-                insert_record_DB(collection_name,
-                                    j, i, y, x,
-                                    link_slides,
-                                    filepath_slides,
-                                    filepath_svs)
-                println("DOWNLOAD Slide complete: CASE NAME = $j - SLIDE ID = $y")
-            end
-        end
-    else
-        println("ERROR : $collection_name - collection not avaiable. Using collection_name field in Config.toml ...")
-
-        # Line of code for definition of "collection_name" from Config.toml
-        filepath_config = joinpath(@__DIR__, "..", "Config.toml")
-        config = TOML.parsefile(filepath_config)
-        collection_name = config["collection_name"]
-        if collection_name != "default" && lowercase(collection_name) in collection_list
-
-            collection_name = lowercase(collection_name)
-            # Project Management (TCGA-OR-A5J1, TCGA-OR-A5J2, etc.)
-            filepath_collection = joinpath(@__DIR__, "..", "collection", "$(collection_name).jsn")
-            download_project_infos(filepath_collection, collection_name)
-            project_id = extract_project_id(filepath_collection)
-            filepath_case = joinpath(@__DIR__, "..", "case", "$(collection_name).jsn")
-            casesID_values, casesNAME_values = getCasesForProject(filepath_case, project_id)
-
-            # Slides Management
-            if isdir(joinpath(@__DIR__, "..", "slides", "$collection_name"))
-                println("Update data ...")
-            else
-                mkdir(joinpath(@__DIR__, "..", "slides", "$collection_name"))
-            end
-            for (i, j) in zip(casesID_values, casesNAME_values)
-                single_casesID_values, single_casesNAME_values = getCasesForProject(filepath_case, i)
-                for (x, y) in zip(single_casesID_values, single_casesNAME_values)
-                    if isdir(joinpath(@__DIR__, "..", "slides", "$(collection_name)", "$j"))
-                    else
-                        mkdir(joinpath(@__DIR__, "..", "slides", "$(collection_name)", "$j"))
-                    end
-                    filepath_slides = joinpath(@__DIR__, "..", "slides", "$(collection_name)", "$j", "$(y).zip")
-                    link_slides = "https://api.digitalslidearchive.org/api/v1/folder/$x/download"
-
-                    download_zip(link_slides, filepath_slides)
-                    filepath_svs = extract_slide(filepath_slides)
-                    insert_record_DB(collection_name,
-                                        j, i, y, x,
-                                        link_slides,
-                                        filepath_slides,
-                                        filepath_svs)
-                    println("DOWNLOAD Slide complete: CASE NAME = $j - SLIDE ID = $y")
-                end
-            end
-        else
-            println("ERROR : $collection_name - collection not avaiable. Change collection_name field in Config.toml.")
-        end
-    end
-end
-
-"""
-    download_single_collection_SOPHYSM(collection_name::AbstractString, path_to_save::AbstractString)
+    download_single_collection(collection_name::AbstractString, path_to_save::AbstractString)
 
 Function for downloading histological slides in SOPYHSM_app associated
 with a collection available in TCGA.
@@ -186,29 +68,31 @@ invalid collection, considers the configuration in the
 `Config.toml` file. The value set in the package is `default`.
 ```julia
 # Examples with valid input
-julia> JHistint.download_single_collection_SOPHYSM("acc", "C:\\...")
-julia> JHistint.download_single_collection_SOPHYSM("bLca", "C:\\...")
+julia> JHistint.download_single_collection("acc", "C:\\...")
+julia> JHistint.download_single_collection("bLca", "C:\\...")
 ```
 ```julia
 # Examples with invalid input
-julia> JHistint.download_single_collection_SOPHYSM("ac", "C:\\...")
-julia> JHistint.download_single_collection_SOPHYSM("", "C:\\...")
+julia> JHistint.download_single_collection("ac", "C:\\...")
+julia> JHistint.download_single_collection("", "C:\\...")
 ```
 """
-function download_single_collection_SOPHYSM(collection_name::AbstractString, path_to_save::AbstractString)
+function download_single_collection(collection_name::AbstractString, path_to_save::AbstractString)
+    DirectoryManager.set_environment()
     # Check the value of the parameter
-    filepath_collection = joinpath(@__DIR__, "..", "collection", "collectionlist.jsn")
-    download_collection_values(filepath_collection)
-    collection_list = extract_collection_values(filepath_collection)
+    filepath_collection_list = joinpath(DirectoryManager.CONFIG_DIR, "collections", "collectionlist.json")
+    download_collection_values(filepath_collection_list)
 
-    if lowercase(collection_name) in collection_list
+    # List with all possible collection values
+    collection_list = extract_collection_values(filepath_collection_list)
+    collection_name = lowercase(collection_name)
 
-        collection_name = lowercase(collection_name)
+    if collection_name in collection_list
         # Project Management (TCGA-OR-A5J1, TCGA-OR-A5J2, etc.)
-        filepath_collection = joinpath(@__DIR__, "..", "collection", "$(collection_name).jsn")
+        filepath_collection = joinpath(DirectoryManager.CONFIG_DIR, "collections", "$(collection_name).json")
         download_project_infos(filepath_collection, collection_name)
         project_id = extract_project_id(filepath_collection)
-        filepath_case = joinpath(@__DIR__, "..", "case", "$(collection_name).jsn")
+        filepath_case = joinpath(DirectoryManager.CONFIG_DIR, "cases", "$(collection_name).json")
         casesID_values, casesNAME_values = getCasesForProject(filepath_case, project_id)
 
         # Slides Management
@@ -220,8 +104,7 @@ function download_single_collection_SOPHYSM(collection_name::AbstractString, pat
         for (i, j) in zip(casesID_values, casesNAME_values)
             single_casesID_values, single_casesNAME_values = getCasesForProject(filepath_case, i)
             for (x, y) in zip(single_casesID_values, single_casesNAME_values)
-                if isdir(joinpath(path_to_save, "$(collection_name)", "$j"))
-                else
+                if !isdir(joinpath(path_to_save, "$(collection_name)", "$j"))
                     mkdir(joinpath(path_to_save, "$(collection_name)", "$j"))
                 end
                 filepath_slides = joinpath(path_to_save, "$(collection_name)", "$j", "$(y).zip")
@@ -237,6 +120,7 @@ function download_single_collection_SOPHYSM(collection_name::AbstractString, pat
                 println("DOWNLOAD Slide complete: CASE NAME = $j - SLIDE ID = $y")
             end
         end
+
     else
         return "error"
     end
@@ -255,16 +139,16 @@ julia> JHistint.download_all_collection()
 """
 function download_all_collection()
     # Collection Management (acc, blca, etc.)
-    filepath_collection = joinpath(@__DIR__, "..", "collection", "collectionlist.jsn")
-    download_collection_values(filepath_collection)
-    collection_list=extract_collection_values(filepath_collection)
+    filepath_collection_list = joinpath(@__DIR__, "..", "collection", "collectionlist.json")
+    download_collection_values(filepath_collection_list)
+    collection_list=extract_collection_values(filepath_collection_list)
 
     for collection_name in collection_list
         # Project Management (TCGA-OR-A5J1, TCGA-OR-A5J2, etc.)
-        filepath_collection = joinpath(@__DIR__, "..", "collection", "$(collection_name).jsn")
-        download_project_infos(filepath_collection, collection_name)
-        project_id = extract_project_id(filepath_collection)
-        filepath_case = joinpath(@__DIR__, "..", "case", "$(collection_name).jsn")
+        filepath_collection_list = joinpath(@__DIR__, "..", "collection", "$(collection_name).json")
+        download_project_infos(filepath_collection_list, collection_name)
+        project_id = extract_project_id(filepath_collection_list)
+        filepath_case = joinpath(@__DIR__, "..", "case", "$(collection_name).json")
         casesID_values, casesNAME_values = getCasesForProject(filepath_case, project_id)
 
         # Slides Management
@@ -313,16 +197,16 @@ julia> JHistint.download_all_collection_SOPHYSM("C:\\...")
 """
 function download_all_collection_SOPHYSM(path_to_save::AbstractString)
     # Collection Management (acc, blca, etc.)
-    filepath_collection = joinpath(@__DIR__, "..", "collection", "collectionlist.jsn")
-    download_collection_values(filepath_collection)
-    collection_list=extract_collection_values(filepath_collection)
+    filepath_collection_list = joinpath(@__DIR__, "..", "collection", "collectionlist.json")
+    download_collection_values(filepath_collection_list)
+    collection_list=extract_collection_values(filepath_collection_list)
 
     for collection_name in collection_list
         # Project Management (TCGA-OR-A5J1, TCGA-OR-A5J2, etc.)
-        filepath_collection = joinpath(@__DIR__, "..", "collection", "$(collection_name).jsn")
-        download_project_infos(filepath_collection, collection_name)
-        project_id = extract_project_id(filepath_collection)
-        filepath_case = joinpath(@__DIR__, "..", "case", "$(collection_name).jsn")
+        filepath_collection_list = joinpath(@__DIR__, "..", "collection", "$(collection_name).json")
+        download_project_infos(filepath_collection_list, collection_name)
+        project_id = extract_project_id(filepath_collection_list)
+        filepath_case = joinpath(@__DIR__, "..", "case", "$(collection_name).json")
         casesID_values, casesNAME_values = getCasesForProject(filepath_case, project_id)
 
         # Slides Management
@@ -401,9 +285,9 @@ julia> JHistint.slide_cell_segmentation_without_download("")
 """
 function slide_cell_segmentation_without_download(collection_name::AbstractString)
     # Check the value of the parameter
-    filepath_collection = joinpath(@__DIR__, "..", "collection", "collectionlist.jsn")
-    download_collection_values(filepath_collection)
-    collection_list = extract_collection_values(filepath_collection)
+    filepath_collection_list = joinpath(@__DIR__, "..", "collection", "collectionlist.json")
+    download_collection_values(filepath_collection_list)
+    collection_list = extract_collection_values(filepath_collection_list)
 
     if lowercase(collection_name) in collection_list
         collection_name = lowercase(collection_name)
@@ -499,9 +383,9 @@ julia> JHistint.slide_cell_segmentation_with_download("")
 """
 function slide_cell_segmentation_with_download(collection_name::AbstractString)
     # Check the value of the parameter
-    filepath_collection = joinpath(@__DIR__, "..", "collection", "collectionlist.jsn")
-    download_collection_values(filepath_collection)
-    collection_list = extract_collection_values(filepath_collection)
+    filepath_collection_list = joinpath(@__DIR__, "..", "collection", "collectionlist.json")
+    download_collection_values(filepath_collection_list)
+    collection_list = extract_collection_values(filepath_collection_list)
 
     if lowercase(collection_name) in collection_list
         collection_name = lowercase(collection_name)

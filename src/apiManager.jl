@@ -72,27 +72,8 @@ function extract_collection_values(filepath::AbstractString)
             push!(collection_values, item["name"])
         end
     end
-    # count=0
-    # println("Choose the imaging collection from the list above: ")
-    # for i in collection_values
-    #    count += 1
-    #    println(count," - TCGA-",i)
-    # end
     return collection_values
 end
-
-# Funzione per acquisizione in input della collection_name da linea di comando.
-# function select_collection_name(collection_values::Vector{Any})
-#    while true
-#        print("Insert the number of the collection of interest: ")
-#        num = parse(Int, readline())
-#        if 1 ≤ num ≤ length(collection_values)
-#            println("Collection selected: TCGA-",collection_values[num])
-#            return collection_values[num]
-#        end
-#        println("Error: Number not in range")
-#    end
-# end
 
 """
     download_project_infos(filepath::AbstractString, collection_name::AbstractString)
@@ -116,7 +97,7 @@ function download_project_infos(filepath::AbstractString, collection_name::Abstr
     url = "https://api.digitalslidearchive.org/api/v1/folder?parentType=collection&parentId=5b9ef8e3e62914002e454c39&name=$collection_name&sort=lowerName&sortdir=1"
     response = HTTP.get(url)
     if response.status == 200
-         open(filepath, "w") do file
+        open(filepath, "w") do file
         write(file, response.body)
     end
     else
@@ -215,14 +196,6 @@ with the cases of the selected collection at startup.
 - `filepath::AbstractString` = Path to save the `.zip` file.
 """
 function download_zip(link::AbstractString, filepath::AbstractString)
-    #response = HTTP.get(link)
-    #if response.status == 200
-    #     open(filepath, "w") do file
-    #    write(file, response.body)
-    #end
-    #else
-    #    println("Error: HTTP request returned status code $(response.status)")
-    #end
     try
         HTTP.open(:GET, link) do http
             open(filepath, "w") do file
