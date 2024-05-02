@@ -126,62 +126,9 @@ function download_single_collection(collection_name::AbstractString, path_to_sav
     end
 end
 
-"""
-    download_all_collection()
-
-Function for downloading histological slides associated with all
-collections available in TCGA.
-
-```julia
-# Examples with valid input
-julia> JHistint.download_all_collection()
-```
-"""
-function download_all_collection()
-    # Collection Management (acc, blca, etc.)
-    filepath_collection_list = joinpath(@__DIR__, "..", "collection", "collectionlist.json")
-    download_collection_values(filepath_collection_list)
-    collection_list=extract_collection_values(filepath_collection_list)
-
-    for collection_name in collection_list
-        # Project Management (TCGA-OR-A5J1, TCGA-OR-A5J2, etc.)
-        filepath_collection_list = joinpath(@__DIR__, "..", "collection", "$(collection_name).json")
-        download_project_infos(filepath_collection_list, collection_name)
-        project_id = extract_project_id(filepath_collection_list)
-        filepath_case = joinpath(@__DIR__, "..", "case", "$(collection_name).json")
-        casesID_values, casesNAME_values = getCasesForProject(filepath_case, project_id)
-
-        # Slides Management
-        if isdir(joinpath(@__DIR__, "..", "slides", "$collection_name"))
-            println("Update data ...")
-        else
-            mkdir(joinpath(@__DIR__, "..", "slides", "$collection_name"))
-        end
-        for (i, j) in zip(casesID_values, casesNAME_values)
-            single_casesID_values, single_casesNAME_values = getCasesForProject(filepath_case, i)
-            for (x, y) in zip(single_casesID_values, single_casesNAME_values)
-                if isdir(joinpath(@__DIR__, "..", "slides", "$(collection_name)", "$j"))
-                else
-                    mkdir(joinpath(@__DIR__, "..", "slides", "$(collection_name)", "$j"))
-                end
-                filepath_slides = joinpath(@__DIR__, "..", "slides", "$(collection_name)", "$j", "$(y).zip")
-                link_slides = "https://api.digitalslidearchive.org/api/v1/folder/$x/download"
-
-                download_zip(link_slides, filepath_slides)
-                filepath_svs = extract_slide(filepath_slides)
-                insert_record_DB(collection_name,
-                                    j, i, y, x,
-                                    link_slides,
-                                    filepath_slides,
-                                    filepath_svs)
-                println("DOWNLOAD Slide complete: CASE NAME = $j - SLIDE ID = $y")
-            end
-        end
-    end
-end
 
 """
-    download_all_collection_SOPHYSM(path_to_save::AbstractString)
+    download_all_collection(path_to_save::AbstractString)
 
 Function for downloading histological slides associated with all
 collections available in TCGA.
@@ -192,21 +139,22 @@ histological slides.
 
 ```julia
 # Examples with valid input
-julia> JHistint.download_all_collection_SOPHYSM("C:\\...")
+julia> JHistint.download_all_collection("C:\\...")
 ```
 """
-function download_all_collection_SOPHYSM(path_to_save::AbstractString)
+function download_all_collection(path_to_save::AbstractString)
+    DirectoryManager.set_environment()
     # Collection Management (acc, blca, etc.)
-    filepath_collection_list = joinpath(@__DIR__, "..", "collection", "collectionlist.json")
+    filepath_collection_list = joinpath(DirectoryManager.CONFIG_DIR, "collections", "collectionlist.json")
     download_collection_values(filepath_collection_list)
-    collection_list=extract_collection_values(filepath_collection_list)
+    collection_list = extract_collection_values(filepath_collection_list)
 
     for collection_name in collection_list
         # Project Management (TCGA-OR-A5J1, TCGA-OR-A5J2, etc.)
-        filepath_collection_list = joinpath(@__DIR__, "..", "collection", "$(collection_name).json")
+        filepath_collection_list = joinpath(DirectoryManager.CONFIG_DIR, "collections", "$(collection_name).json")
         download_project_infos(filepath_collection_list, collection_name)
         project_id = extract_project_id(filepath_collection_list)
-        filepath_case = joinpath(@__DIR__, "..", "case", "$(collection_name).json")
+        filepath_case = joinpath(DirectoryManager.CONFIG_DIR, "cases", "$(collection_name).json")
         casesID_values, casesNAME_values = getCasesForProject(filepath_case, project_id)
 
         # Slides Management
