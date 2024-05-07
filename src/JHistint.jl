@@ -31,6 +31,7 @@ using VoronoiCells
 using GeometryBasics
 
 ### Exported Functions
+export async_download_single_slide_from_collection
 export download_single_slide_from_collection
 export download_single_collection
 export download_all_collection
@@ -112,6 +113,24 @@ function download_single_slide_from_collection(collection_name::AbstractString, 
     else
         return "error"
     end
+end
+
+"""
+    async_download_single_slide_from_collection(collection_name::AbstractString, path_to_save::AbstractString)
+
+Function for asyncronous download of histological slides in SOPYHSM_app associated
+with a collection available in TCGA.
+
+# Arguments
+- `collection_name::AbstractString` = Collection of TCGA data to download the
+histological slides.
+- `path_to_save::AbstractString` = Local folder path for saving
+histological slides.
+"""
+function async_download_single_slide_from_collection(collection_name::AbstractString, path_to_save::AbstractString)
+    task = @task download_single_slide_from_collection(collection_name, path_to_save)
+    schedule(task)
+    return task
 end
 
 """
