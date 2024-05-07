@@ -64,6 +64,9 @@ histological slides.
 histological slides.
 """
 function download_single_slide_from_collection(collection_name::AbstractString, path_to_save::AbstractString)
+    if Sys.iswindows() && path_to_save[1] == '/'
+        path_to_save = path_to_save[2:end]
+    end
     DirectoryManager.set_environment()
     # Check the value of the parameter
     filepath_collection_list = joinpath(DirectoryManager.CONFIG_DIR, "collections", "collectionlist.json")
