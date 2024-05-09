@@ -432,16 +432,12 @@ function slide_cell_segmentation_with_download(collection_name::AbstractString)
                 println("")
                 # J-SPACE Interface
                 filepath_file_JSPACE = replace(filepath_matrix, ".txt" => "_Files_JSpace")
-                if isdir(filepath_file_JSPACE)
-                    # do nothing
-                else
+                if !isdir(filepath_file_JSPACE)
                     mkdir(filepath_file_JSPACE) # create directory for saving J_Space files
                 end
 
                 filepath_plot_JSPACE = replace(filepath_matrix, ".txt" => "_Plots_JSpace")
-                if isdir(filepath_plot_JSPACE)
-                    # do nothing
-                else
+                if !isdir(filepath_plot_JSPACE)
                     mkdir(filepath_plot_JSPACE) # create directory for saving J_Space plots
                 end
 

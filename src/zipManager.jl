@@ -35,6 +35,8 @@ function extract_slide(filepath_zip::AbstractString)
     end
     # Close .zip file
     close(archive)
+    # Delete .zip file
+    rm(filepath_zip)
     return dest_path
 end
 
