@@ -3,6 +3,10 @@
 ### JHistintLogger -- JHistint
 ### JHistintLogger.jl
 
+### Packages
+using Logging
+using Dates
+
 ### Exported functions
 export info_log
 export close_logger

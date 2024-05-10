@@ -12,7 +12,24 @@ using JSON
 using ZipFile
 using TOML
 using SQLite
-using Dates
+using DataFrames
+using Images
+using ImageSegmentation
+using ImageMagick
+using ImageView
+using FileIO
+using Random
+using IndirectArrays
+using Graphs
+using LightGraphs
+using SimpleWeightedGraphs
+using CSV
+using Luxor
+using Karnak
+using MetaGraphs
+using Plots
+using VoronoiCells
+using GeometryBasics
 
 ### Exported Functions
 export test
@@ -20,17 +37,26 @@ export async_download_single_slide_from_collection
 export download_single_slide_from_collection
 export download_single_collection
 export download_all_collection
+export slide_cell_segmentation_without_download
+export slide_cell_segmentation_with_download
+export start_segmentation_SOPHYSM_tessellation
+export start_segmentation_SOPHYSM_graph
 
 ### Included Files
 include("DirectoryManager.jl")
 include("JHistintLogger.jl")
-include("ApiManager.jl")
-include("DatabaseManager.jl")
-include("ZipManager.jl")
+include("apiManager.jl")
+include("dbManager.jl")
+include("zipManager.jl")
+
+include("segmentationManager.jl")
+include("graphManager.jl")
+include("noiseManager.jl")
+include("tessellationManager.jl")
 
 function test()
     open_logger()
-    log_message("@info", "prova")
+    log_message("@info", "test")
     close_logger()
 end
 
@@ -78,17 +104,17 @@ function download_single_slide_from_collection(collection_name::AbstractString,
 
         # Slides Management
         if isdir(joinpath(path_to_save, "$collection_name"))
-            log_message("@info", "Update Data")
+            # info(logger, "Update data")
         else
             mkdir(joinpath(path_to_save, "$collection_name"))
-            log_message("@info", "Created new collection folder")
+            # info(logger, "Create new collection folder")
         end
 
         i, j = casesID_values[1], casesNAME_values[1]
         single_casesID_values, single_casesNAME_values = getCasesForProject(filepath_case, i)
         x, y = single_casesID_values[1], single_casesNAME_values[1]
         if !isdir(joinpath(path_to_save, "$(collection_name)", "$j"))
-            log_message("@info", "Created new slide folder")
+            # info(logger, "Create new slide folder")
             mkdir(joinpath(path_to_save, "$(collection_name)", "$j"))
         end
         filepath_slides = joinpath(path_to_save, "$(collection_name)", "$j", "$(y).zip")
@@ -101,11 +127,10 @@ function download_single_slide_from_collection(collection_name::AbstractString,
                                     filepath_slides,
                                     filepath_svs,
                                     path_to_save)
-        log_message("@info", "DOWNLOAD Slide complete: CASE NAME = $j - SLIDE ID = $y")
+        # info(logger, "DOWNLOAD Slide complete: CASE NAME = $j - SLIDE ID = $y")
     else
-        log_message("@info", "Collection selected doesn't exist")
+        # info(error, "Collection selected doesn't exist")
     end
-    close_logger()
 end
 
 """
@@ -262,5 +287,268 @@ function download_all_collection(path_to_save::AbstractString)
         end
     end
 end
-### end of file -- JHistint.jl
+
+"""
+    slide_cell_segmentation_without_download(collection_name::AbstractString)
+
+Function for performing cell segmentation on histopathological slides present
+in the `JHistint_DB` database associated with the collection name provided as
+an argument. After generating the segmented slide, the function
+proceeds with constructing and saving the corresponding graph and adjacency matrix.
+
+# Arguments
+- `collection_name::AbstractString` = Collection of TCGA data to download
+the histological slides.
+
+# Notes
+The function utilizes the `JHistint_DB` database for performing cell
+segmentation on the histopathological slides associated with the provided
+collection name. It generates a segmented slide and constructs a corresponding
+graph and adjacency matrix. The output files are saved in a user-defined
+directory. The function may take a considerable amount of time to complete,
+depending on the size of the slides and the complexity of the segmentation algorithm.
+For each slide in the database, cell segmentation is performed using the
+`apply_segmentation_without_download` function, and the path where the result
+is saved is stored in the database using the `load_seg_slide` function.
+The segmentation process is defined in 4 steps:
+- LOAD SLIDE ... (slide_id)
+- APPLY SEGMENTATION ... (slide_id)
+- BUILD GRAPH ... (slide_id)
+- BUILD & SAVE ADJACENCY MATRIX ... (slide_id)
+- J-SPACE features ... (slide_id)
+The adjacency matrix is saved in the same directory as the original image in
+text format.
+Finally, a confirmation message is printed for each segmented slide. Unlike
+the `slide_cell_segmentation_with_download` function,
+this function does not involve the creation and download of the segmented image.
+```julia
+# Examples with valid input
+julia> JHistint.slide_cell_segmentation_without_download("acc")
+julia> JHistint.slide_cell_segmentation_without_download("bLca")
+```
+```julia
+# Examples with invalid input
+julia> JHistint.slide_cell_segmentation_without_download("ac")
+julia> JHistint.slide_cell_segmentation_without_download("")
+```
+"""
+function slide_cell_segmentation_without_download(collection_name::AbstractString)
+    # Check the value of the parameter
+    filepath_collection_list = joinpath(@__DIR__, "..", "collection", "collectionlist.json")
+    download_collection_values(filepath_collection_list)
+    collection_list = extract_collection_values(filepath_collection_list)
+
+    if lowercase(collection_name) in collection_list
+        collection_name = lowercase(collection_name)
+        slide_list = query_extract_slide_svs(collection_name)
+        if isempty(slide_list)
+            println("ERROR : No match for $collection_name - collection in DB. Download the collection before.")
+        else
+            for record in slide_list
+                filepath_matrix, matrix = apply_segmentation_without_download(record)
+                load_seg_slide("not saved", filepath_matrix, matrix, record[1])
+                slide_id = record[1]
+                println("SEGMENTATION SLIDE, BUILD GRAPH & MATRIX complete for SLIDE ID = $slide_id")
+                println("")
+                # J-SPACE Interface
+                filepath_file_JSPACE = replace(filepath_matrix, ".txt" => "_Files_JSpace")
+                if isdir(filepath_file_JSPACE)
+                    # do nothing
+                else
+                    mkdir(filepath_file_JSPACE) # create directory for saving J_Space files
+                end
+
+                filepath_plot_JSPACE = replace(filepath_matrix, ".txt" => "_Plots_JSpace")
+                if isdir(filepath_plot_JSPACE)
+                    # do nothing
+                else
+                    mkdir(filepath_plot_JSPACE) # create directory for saving J_Space plots
+                end
+
+                filepath_reference_JSPACE = replace(filepath_matrix, ".txt" => "_reference.fasta")
+                filepath_dataframe_labels = replace(filepath_matrix, r"....$" => "_dataframe_labels.csv")
+                filepath_dataframe_edges = replace(filepath_matrix, r"....$" => "_dataframe_edges.csv")
+                Start_J_Space(filepath_reference_JSPACE,
+                                filepath_matrix,
+                                filepath_file_JSPACE,
+                                filepath_plot_JSPACE,
+                                slide_id,
+                                filepath_dataframe_edges,
+                                filepath_dataframe_labels)
+            end
+        end
+    else
+        println("ERROR : $collection_name - collection not avaiable. Retry with a new collection.")
+    end
 end
+
+"""
+    slide_cell_segmentation_with_download(collection_name::AbstractString)
+
+Function for performing cell segmentation on histopathological slides present in
+the `JHistint_DB` database associated with the collection name provided as an
+argument. The function downloads the segmented slide, which is placed in the
+same directory as the original slide. After generating the segmented slide,
+the function proceeds with constructing and saving the corresponding graph
+and adjacency matrix.
+
+# Arguments
+- `collection_name::AbstractString` = TCGA data collection for which to
+perform cell segmentation.
+
+# Notes
+The function utilizes the `JHistint_DB` database for performing cell segmentation
+on the histopathological slides associated with the provided collection name.
+It generates a segmented slide and constructs a corresponding graph and adjacency matrix.
+The output files are saved in a user-defined directory. The function may take a
+considerable amount of time to complete, depending on the size of the slides
+and the complexity of the segmentation algorithm. For each slide in the database,
+cell segmentation is performed using the `apply_segmentation_with_download` function,
+and the path where the result is saved is stored in the database using the
+`load_seg_slide` function. The segmentation process is similar to that described
+in the `slide_cell_segmentation_without_download` function, with the added step
+of downloading the segmented image and placing it in the same directory as the
+original slide. The segmentation process is defined in 6 steps:
+- LOAD SLIDE ... (slide_id)
+- APPLY SEGMENTATION ... (slide_id)
+- BUILD SEGMENTED SLIDE ... (slide_id)
+- BUILD GRAPH ... (slide_id)
+- BUILD & SAVE ADJACENCY MATRIX ... (slide_id)
+- SAVE SEGMENTED SLIDE ... (slide_id)
+- J-SPACE features ... (slide_id)
+The adjacency matrix is saved in text format in the same directory as both
+the original and segmented images.
+Finally, a confirmation message is printed for each segmented slide.
+```julia
+# Examples with valid input
+julia> JHistint.slide_cell_segmentation_with_download("acc")
+julia> JHistint.slide_cell_segmentation_with_download("bLca")
+```
+```julia
+# Examples with invalid input
+julia> JHistint.slide_cell_segmentation_with_download("ac")
+julia> JHistint.slide_cell_segmentation_with_download("")
+```
+"""
+function slide_cell_segmentation_with_download(collection_name::AbstractString)
+    # Check the value of the parameter
+    filepath_collection_list = joinpath(@__DIR__, "..", "collection", "collectionlist.json")
+    download_collection_values(filepath_collection_list)
+    collection_list = extract_collection_values(filepath_collection_list)
+
+    if lowercase(collection_name) in collection_list
+        collection_name = lowercase(collection_name)
+        slide_list = query_extract_slide_svs(collection_name)
+        if isempty(slide_list)
+            println("ERROR : No match for $collection_name - collection in DB. Download the collection before.")
+        else
+            for record in slide_list
+                filepath_seg, filepath_matrix, matrix = apply_segmentation_with_download(record)
+                load_seg_slide(filepath_seg, filepath_matrix, matrix, record[1])
+                slide_id = record[1]
+                println("SEGMENTATION SLIDE, BUILD GRAPH & MATRIX complete for SLIDE ID = $slide_id")
+                println("")
+                # J-SPACE Interface
+                filepath_file_JSPACE = replace(filepath_matrix, ".txt" => "_Files_JSpace")
+                if !isdir(filepath_file_JSPACE)
+                    mkdir(filepath_file_JSPACE) # create directory for saving J_Space files
+                end
+
+                filepath_plot_JSPACE = replace(filepath_matrix, ".txt" => "_Plots_JSpace")
+                if !isdir(filepath_plot_JSPACE)
+                    mkdir(filepath_plot_JSPACE) # create directory for saving J_Space plots
+                end
+
+                filepath_reference_JSPACE = replace(filepath_matrix, ".txt" => "_reference.fasta")
+                filepath_dataframe_labels = replace(filepath_matrix, r"....$" => "_dataframe_labels.csv")
+                filepath_dataframe_edges = replace(filepath_matrix, r"....$" => "_dataframe_edges.csv")
+                Start_J_Space(filepath_reference_JSPACE,
+                                filepath_matrix,
+                                filepath_file_JSPACE,
+                                filepath_plot_JSPACE,
+                                slide_id,
+                                filepath_dataframe_edges,
+                                filepath_dataframe_labels)
+            end
+        end
+    else
+        println("ERROR : $collection_name - collection not avaiable. Retry with a new collection.")
+    end
+end
+
+"""
+    start_segmentation_SOPHYSM_tessellation(filepath_input::AbstractString,
+                                    filepath_output::AbstractString,
+                                    thresholdGray::Float64,
+                                    thresholdMarker::Float64,
+                                    min_threshold::Float32,
+                                    max_threshold::Float32)
+
+Initiates the SOPHYSM segmentation process for histological image using
+tessellation process.
+
+# Arguments
+- `filepath_input::AbstractString`: The file path to the input histological
+image to be segmented.
+- `filepath_output::AbstractString`: The file path where the segmented results
+and related data will be saved.
+- `thresholdGray::Float64`: The grayscale threshold used for initial
+image processing.
+- `thresholdMarker::Float64`: The marker threshold for identifying
+cellular structures.
+- `min_threshold`: Minimal threshold for considering segments area.
+- `max_threshold`: Maximal threshold for considering segments area.
+"""
+function start_segmentation_SOPHYSM_tessellation(filepath_input::AbstractString,
+                                    filepath_output::AbstractString,
+                                    thresholdGray::Float64,
+                                    thresholdMarker::Float64,
+                                    min_threshold::Float32,
+                                    max_threshold::Float32)
+    apply_segmentation_SOPHYSM_tessellation(filepath_input,
+                                filepath_output,
+                                thresholdGray,
+                                thresholdMarker,
+                                min_threshold,
+                                max_threshold)
+end
+
+"""
+    start_segmentation_SOPHYSM_graph(filepath_input::AbstractString,
+                                    filepath_output::AbstractString,
+                                    thresholdGray::Float64,
+                                    thresholdMarker::Float64,
+                                    min_threshold::Float32,
+                                    max_threshold::Float32)
+
+Initiates the SOPHYSM segmentation process for histological image using
+graph construction.
+
+# Arguments
+- `filepath_input::AbstractString`: The file path to the input histological
+image to be segmented.
+- `filepath_output::AbstractString`: The file path where the segmented results
+and related data will be saved.
+- `thresholdGray::Float64`: The grayscale threshold used for initial
+image processing.
+- `thresholdMarker::Float64`: The marker threshold for identifying
+cellular structures.
+- `min_threshold`: Minimal threshold for considering segments area.
+- `max_threshold`: Maximal threshold for considering segments area.
+"""
+function start_segmentation_SOPHYSM_graph(filepath_input::AbstractString,
+                                    filepath_output::AbstractString,
+                                    thresholdGray::Float64,
+                                    thresholdMarker::Float64,
+                                    min_threshold::Float32,
+                                    max_threshold::Float32)
+    apply_segmentation_SOPHYSM_graph(filepath_input,
+                                filepath_output,
+                                thresholdGray,
+                                thresholdMarker,
+                                min_threshold,
+                                max_threshold)
+end
+end
+
+### end of file -- JHistint.jl
