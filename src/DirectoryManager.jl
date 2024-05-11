@@ -1,9 +1,6 @@
 ### Includes the logic to save and update the current user workspace
 module DirectoryManager
 
-### Packages
-using JSON
-
 ### Exported functions
 export set_environment
 
