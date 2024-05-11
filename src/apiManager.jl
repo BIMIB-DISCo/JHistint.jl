@@ -1,7 +1,7 @@
 ### -*- Mode: Julia -*-
 
 ### API CDSA Manager -- JHistint
-### ApiManager.jl
+### apiManager.jl
 
 ### Exported Functions
 export download_collection_values

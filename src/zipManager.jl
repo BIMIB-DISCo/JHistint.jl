@@ -1,7 +1,7 @@
 ### -*- Mode: Julia -*-
 
 ### Zip Manager -- JHistint
-### ZipManager.jl
+### zipManager.jl
 
 ### Exported Functions
 export extract_slide
