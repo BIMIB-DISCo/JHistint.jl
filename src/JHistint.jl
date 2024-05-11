@@ -6,6 +6,7 @@
 module JHistint
 
 ### Packages
+using Logging
 using HTTP
 using JSON
 using ZipFile
@@ -31,6 +32,7 @@ using VoronoiCells
 using GeometryBasics
 
 ### Exported Functions
+export test
 export async_download_single_slide_from_collection
 export download_single_slide_from_collection
 export download_single_collection
@@ -42,14 +44,21 @@ export start_segmentation_SOPHYSM_graph
 
 ### Included Files
 include("DirectoryManager.jl")
-
+include("JHistintLogger.jl")
 include("apiManager.jl")
 include("dbManager.jl")
 include("zipManager.jl")
+
 include("segmentationManager.jl")
 include("graphManager.jl")
 include("noiseManager.jl")
 include("tessellationManager.jl")
+
+function test()
+    open_logger()
+    log_message("@info", "finalmente")
+    close_logger()
+end
 
 ### Main Functions
 """
@@ -64,13 +73,17 @@ histological slides.
 - `path_to_save::AbstractString` = Local folder path for saving
 histological slides.
 """
-function download_single_slide_from_collection(collection_name::AbstractString, path_to_save::AbstractString)
+function download_single_slide_from_collection(collection_name::AbstractString, 
+                                               path_to_save::AbstractString)
+    open_logger()
     if Sys.iswindows() && path_to_save[1] == '/'
         path_to_save = path_to_save[2:end]
     end
     DirectoryManager.set_environment()
     # Check the value of the parameter
-    filepath_collection_list = joinpath(DirectoryManager.CONFIG_DIR, "collections", "collectionlist.json")
+    filepath_collection_list = joinpath(DirectoryManager.CONFIG_DIR, 
+                                        "collections", 
+                                        "collectionlist.json")
     download_collection_values(filepath_collection_list)
 
     # List with all possible collection values
@@ -79,23 +92,29 @@ function download_single_slide_from_collection(collection_name::AbstractString, 
 
     if collection_name in collection_list
         # Project Management (TCGA-OR-A5J1, TCGA-OR-A5J2, etc.)
-        filepath_collection = joinpath(DirectoryManager.CONFIG_DIR, "collections", "$(collection_name).json")
+        filepath_collection = joinpath(DirectoryManager.CONFIG_DIR, 
+                                       "collections",
+                                       "$(collection_name).json")
         download_project_infos(filepath_collection, collection_name)
         project_id = extract_project_id(filepath_collection)
-        filepath_case = joinpath(DirectoryManager.CONFIG_DIR, "cases", "$(collection_name).json")
+        filepath_case = joinpath(DirectoryManager.CONFIG_DIR, 
+                                 "cases", 
+                                 "$(collection_name).json")
         casesID_values, casesNAME_values = getCasesForProject(filepath_case, project_id)
 
         # Slides Management
         if isdir(joinpath(path_to_save, "$collection_name"))
-            println("Update data ...")
+            # info(logger, "Update data")
         else
             mkdir(joinpath(path_to_save, "$collection_name"))
+            log_message("@info", "Create new collection folder") # info(logger, "Create new collection folder")
         end
 
         i, j = casesID_values[1], casesNAME_values[1]
         single_casesID_values, single_casesNAME_values = getCasesForProject(filepath_case, i)
         x, y = single_casesID_values[1], single_casesNAME_values[1]
         if !isdir(joinpath(path_to_save, "$(collection_name)", "$j"))
+            log_message("@info", "reate new slide folder") # info(logger, "Create new slide folder")
             mkdir(joinpath(path_to_save, "$(collection_name)", "$j"))
         end
         filepath_slides = joinpath(path_to_save, "$(collection_name)", "$j", "$(y).zip")
@@ -108,10 +127,9 @@ function download_single_slide_from_collection(collection_name::AbstractString, 
                                     filepath_slides,
                                     filepath_svs,
                                     path_to_save)
-        println("DOWNLOAD Slide complete: CASE NAME = $j - SLIDE ID = $y")
-
+        log_message("@info", "DOWNLOAD Slide complete: CASE NAME = $j - SLIDE ID = $y")# info(logger, "DOWNLOAD Slide complete: CASE NAME = $j - SLIDE ID = $y")
     else
-        return "error"
+        log_message("@info", "Collection selected doesn't exist")# info(error, "Collection selected doesn't exist")
     end
 end
 
