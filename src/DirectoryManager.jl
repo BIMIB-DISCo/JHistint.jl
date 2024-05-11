@@ -1,8 +1,3 @@
-### -*- Mode: Julia -*-
-
-### DirectoryManager -- JHistint
-### DirectoryManager.jl
-
 ### Includes the logic to save and update the current user workspace
 module DirectoryManager
 
