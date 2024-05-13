@@ -29,9 +29,9 @@ include("dbManager.jl")
 include("zipManager.jl")
 
 function test()
-    open_logger()
-    log_message("@info", "test")
-    close_logger()
+    jh_open_logger()
+    jh_log_message("@info", "test")
+    jh_close_logger()
 end
 
 ### Main Functions
@@ -49,7 +49,7 @@ histological slides.
 """
 function download_single_slide_from_collection(collection_name::AbstractString, 
                                                path_to_save::AbstractString)
-    open_logger()
+    jh_open_logger()
     if Sys.iswindows() && path_to_save[1] == '/'
         path_to_save = path_to_save[2:end]
     end
@@ -78,17 +78,17 @@ function download_single_slide_from_collection(collection_name::AbstractString,
 
         # Slides Management
         if isdir(joinpath(path_to_save, "$collection_name"))
-            log_message("@info", "Updating data...")
+            jh_log_message("@info", "Updating data...")
         else
             mkdir(joinpath(path_to_save, "$collection_name"))
-            log_message("@info", "Create new collection folder")
+            jh_log_message("@info", "Create new collection folder")
         end
 
         i, j = casesID_values[1], casesNAME_values[1]
         single_casesID_values, single_casesNAME_values = getCasesForProject(filepath_case, i)
         x, y = single_casesID_values[1], single_casesNAME_values[1]
         if !isdir(joinpath(path_to_save, "$(collection_name)", "$j"))
-            log_message("@info", "Create new slide folder")
+            jh_log_message("@info", "Create new slide folder")
             mkdir(joinpath(path_to_save, "$(collection_name)", "$j"))
         end
         filepath_slides = joinpath(path_to_save, "$(collection_name)", "$j", "$(y).zip")
@@ -101,11 +101,11 @@ function download_single_slide_from_collection(collection_name::AbstractString,
                                     filepath_slides,
                                     filepath_svs,
                                     path_to_save)
-        log_message("@info", "DOWNLOAD Slide complete: CASE NAME = $j - SLIDE ID = $y")
+        jh_log_message("@info", "DOWNLOAD Slide complete: CASE NAME = $j - SLIDE ID = $y")
     else
-        log_message("@info", "Collection selected doesn't exist")
+        jh_log_message("@info", "Collection selected doesn't exist")
     end
-    close_logger()
+    jh_close_logger()
 end
 
 """
