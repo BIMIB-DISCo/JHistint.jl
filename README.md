@@ -9,7 +9,7 @@ images associated with the data available on "The Cancer Genome Atlas"
 Data Portal. The library includes functions for managing
 image-processing algorithms for cellular and nuclei segmentation,
 constructing graph and the corresponding adjacency matrix, building
-tessellation and interfacing with J-Space.jl package to simulate the
+tessellation and interfacing with `J-Space.jl` package to simulate the
 spatial growth and the genomic evolution of a cell population and the
 experiment of sequencing the genome of the sampled cells.
 
@@ -143,32 +143,34 @@ Below are the APIs used in the project:
 
 ## Package Installation
 
-- Step 1 - Install `J-Space` from `development` branch:
+Step 1 - Install `J-Space` from `development` branch:
+```julia
+(@v1.11) pkg > add https://github.com/BIMIB-DISCo/J-Space.jl.git#development
 ```
-(@v1.8) pkg > add https://github.com/BIMIB-DISCo/J-Space.jl.git#development
-```
-- Step 2 - Install `JHistint` from GitHub Repository:
-```
-(@v1.8) pkg > add https://github.com/niccolo99mandelli/JHistint.jl.git
 
-   ...
-   
+Step 2 - Install `JHistint` from GitHub Repository:
+```julia
+(@v1.11) pkg > add https://github.com/niccolo99mandelli/JHistint.jl.git
+```
+
+Finally use `JHistint`
+```julia
 julia > using JHistint
 ```
 
 
-## Package Installation Julia Registries (In Progress)
+## Package Installation via Julia Registries (In Progress)
 
 The `JHistint` package is available in the Julia Registries and can be
 installed as follows:
-```
+```julia
 julia > using Pkg
 julia > Pkg.add("JHistint")
 julia > using JHistint
 ```
 Otherwise, type `]` in the Julia REPL and execute:
-```
-(@v1.8) pkg > add JHistint
+```julia
+(@v1.11) pkg > add JHistint
 julia > using JHistint
 ```
 
@@ -180,44 +182,63 @@ The input files used by the demo are available in the
 also be saved in the related directory.  
 If you want to access the demo output files directly without running
 it, they are available in the `docs/readme_output_example`
-directory. Follow the steps below to start the demo:
-* Add `J-Space` package from the `BIMIB-DISCo` GitHub repository. Type `]`
-  in Julia REPL and execute:
-```
-(@v1.8) pkg > add https://github.com/BIMIB-DISCo/J-Space.jl.git#development
-```
-* Add `JHistint` package from the `BIMIB-DISCo` GitHub
-  repository. Type `]` in Julia REPL and execute:
-```
-(@v1.8) pkg > add https://github.com/niccolo99mandelli/JHistint.jl.git
-```
-  Note : dependency error caused by unregistered package -> Need to be
-  add to Julia Registries to resolve (in progress).
-* Activate `J-Space` package to avoid package dependency issues. From
-  command-line type:
-```
-    julia -e  'cd("/home/nmandelli/.julia/packages/J_Space/______/"); using Pkg; Pkg.activate("."); using J_Space;'
-```
-  Note : "______" refers to the code given to the installed package
-  (J_Space), replace it with the code you can find in the indicated
-  path. Make sure the path refers to the location of your package.
-* Activate `JHistint` package and Run function for downloading slides
-  and populating DB:  
-```
-   julia -e  'cd("/home/nmandelli/.julia/packages/JHistint/______/"); using Pkg; Pkg.activate("."); using JHistint; JHistint.download_single_collection("lusc")'
-```
-  Note : `______` refers to the code given to the installed package
-  (JHistint), replace it with the code you can find in the indicated
-  path. Make sure the path refers to the location of your package.  
-  The demo is structured for three histological slides, therefore it is
-  sufficient to interrupt the execution after downloading the first
-  three slides (using `Ctrl C`). The output will be displayed on the
-  screen.
+directory. Follow the steps below to start the demo.
 
-* Run function for segmentating slides in DB, creating graph and build
-  adjancency matrix.  Interface with `J-Space` for Files and Plots build:
+### Add `J-Space`
+
+Add `J-Space` package from the `BIMIB-DISCo` GitHub repository. Type
+`]` in Julia REPL and execute:
+```julia
+(@v1.11) pkg > add https://github.com/BIMIB-DISCo/J-Space.jl.git#development
 ```
-    julia -e  'using JHistint; JHistint.slide_cell_segmentation_without_download("lusc")'
+
+### Add `JHistint`
+
+Add `JHistint` package from the `BIMIB-DISCo` GitHub repository. Type
+`]` in Julia REPL and execute:
+```julia
+(@v1.11) pkg > add https://github.com/niccolo99mandelli/JHistint.jl.git
+```
+Note: a dependency error may be caused by unregistered package (cf.,
+`J-Space`).  This requires adding it to the Julia Registries to
+resolve (in progress).
+
+
+### Activate `J-Space`
+
+Activate `J-Space` package to avoid package dependency issues. From
+command-line type:
+```shell
+julia -e  'cd("/home/nmandelli/.julia/packages/J_Space/______/"); using Pkg; Pkg.activate("."); using J_Space;'
+```
+Note : `______` refers to the code given to the installed package
+(J_Space), replace it with the code you can find in the indicated
+path. Make sure the path refers to the location of your package.
+
+
+### Activate `JHistint`
+
+Activate `JHistint` package and Run function for downloading slides
+and populating the data base:
+```shell
+julia -e  'cd("/home/nmandelli/.julia/packages/JHistint/______/"); using Pkg; Pkg.activate("."); using JHistint; JHistint.download_single_collection("lusc")'
+```
+Note : `______` refers to the code given to the installed package
+(JHistint), replace it with the code you can find in the indicated
+path. Make sure the path refers to the location of your package.  
+The demo is structured for three histological slides, therefore it is
+sufficient to interrupt the execution after downloading the first
+three slides (using `Ctrl C`). The output will be displayed on the
+screen.
+
+
+### Run the Segmentation Test
+
+Run function for segmentating slides in DB, creating graph and build
+adjancency matrix.  Interface with `J-Space` for Files and Plots
+build:
+```shell
+julia -e  'using JHistint; JHistint.slide_cell_segmentation_without_download("lusc")'
 ```
 
 
@@ -353,7 +374,7 @@ are provided below:
 
 Documentation is available on the Julia Pages at:
 https://niccolo99mandelli.github.io/JHistint.jl/
-Further information about the J-Space package can be found at the
+Further information about the `J-Space` package can be found at the
 following repository:
 https://github.com/niccolo99mandelli/J-Space.jl.git 
 
