@@ -183,30 +183,30 @@ it, they are available in the `docs/readme_output_example`
 directory. Follow the steps below to start the demo:
 * Add `J-Space` package from the `BIMIB-DISCo` GitHub repository. Type `]`
   in Julia REPL and execute:
-```
+  ```
 (@v1.8) pkg > add https://github.com/BIMIB-DISCo/J-Space.jl.git#development
-```
+  ```
 * Add `JHistint` package from the `BIMIB-DISCo` GitHub
   repository. Type `]` in Julia REPL and execute:
-```
+  ```
 (@v1.8) pkg > add https://github.com/niccolo99mandelli/JHistint.jl.git
-```
+  ```
   Note : dependency error caused by unregistered package -> Need to be
   add to Julia Registries to resolve (in progress).
 * Activate `J-Space` package to avoid package dependency issues. From
   command-line type:
-```
+  ```
 julia -e  'cd("/home/nmandelli/.julia/packages/J_Space/______/"); using Pkg; Pkg.activate("."); using J_Space;'
-```
+  ```
   Note : "______" refers to the code given to the installed package
   (J_Space), replace it with the code you can find in the indicated
   path. Make sure the path refers to the location of your package.
 * Activate `JHistint` package and Run function for downloading slides
   and populating DB:  
-```
+  ```
 julia -e  'cd("/home/nmandelli/.julia/packages/JHistint/______/"); using Pkg; Pkg.activate("."); using JHistint; JHistint.download_single_collection("lusc")'
-```
-  Note : "______" refers to the code given to the installed package
+  ```
+  Note : `______` refers to the code given to the installed package
   (JHistint), replace it with the code you can find in the indicated
   path. Make sure the path refers to the location of your package.  
   The demo is structured for three histological slides, therefore it is
@@ -215,10 +215,10 @@ julia -e  'cd("/home/nmandelli/.julia/packages/JHistint/______/"); using Pkg; Pk
   screen.
 
 * Run function for segmentating slides in DB, creating graph and build
-  adjancency matrix. Interface with `J-Space` for Files and Plots build:
-```
+  adjancency matrix.  Interface with `J-Space` for Files and Plots build:
+  ```
 julia -e  'using JHistint; JHistint.slide_cell_segmentation_without_download("lusc")'
-```
+  ```
 
 
 ### DEMO Results
@@ -356,3 +356,5 @@ https://niccolo99mandelli.github.io/JHistint.jl/
 Further information about the J-Space package can be found at the
 following repository:
 https://github.com/niccolo99mandelli/J-Space.jl.git 
+
+<!-- README.md ends here -->
