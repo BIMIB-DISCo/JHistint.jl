@@ -3,9 +3,11 @@
 ### JHistint -- Julia Histopathology Interface.
 ### JHistint.jl
 
+
 module JHistint
 
 ### Packages
+
 using Logging
 using HTTP
 using JSON
@@ -14,19 +16,25 @@ using TOML
 using SQLite
 using FileIO
 using Dates
+
+
 ### Exported Functions
+
 export test
 export async_download_single_slide_from_collection
 export download_single_slide_from_collection
 export download_single_collection
 export download_all_collection
 
+
 ### Included Files
+
 include("DirectoryManager.jl")
 include("JHistintLogger.jl")
 include("apiManager.jl")
 include("dbManager.jl")
 include("zipManager.jl")
+
 
 function test()
     jh_open_logger()
@@ -34,7 +42,9 @@ function test()
     jh_close_logger()
 end
 
+
 ### Main Functions
+
 """
     download_single_slide_from_collection(collection_name::AbstractString, path_to_save::AbstractString)
 
@@ -42,10 +52,10 @@ Function for downloading histological slides in SOPYHSM_app associated
 with a collection available in TCGA.
 
 # Arguments
-- `collection_name::AbstractString` = Collection of TCGA data to download the
-histological slides.
+- `collection_name::AbstractString` = Collection of TCGA data to
+  download the histological slides.
 - `path_to_save::AbstractString` = Local folder path for saving
-histological slides.
+  histological slides.
 """
 function download_single_slide_from_collection(collection_name::AbstractString,
                                                path_to_save::AbstractString)
