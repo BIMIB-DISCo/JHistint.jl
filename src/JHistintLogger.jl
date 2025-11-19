@@ -4,13 +4,17 @@
 ### JHistintLogger.jl
 
 ### Packages
+
 using Logging
 using Dates
 
+
 ### Exported functions
+
 export jh_log_message
 export jh_close_logger
 export jh_open_logger
+
 
 """
     jh_open_logger()
@@ -22,6 +26,7 @@ function jh_open_logger()
     global logger = SimpleLogger(io)
     global console = ConsoleLogger(stdout)
 end
+
 
 """
     jh_log_message(level::AbstractString, message::AbstractString)
@@ -42,6 +47,7 @@ function jh_log_message(level::AbstractString, message::AbstractString)
     eval(expr)
 end
 
+
 """
     jh_close_logger()
 
@@ -51,3 +57,5 @@ function jh_close_logger()
     flush(io)
     close(io)
 end
+
+### JHistintLogger.jl ends here.
