@@ -33,8 +33,7 @@ limits in the queried file, ensuring the complete download of the
 file. The API belongs to the category for managing the folders stored
 in the repository.  The downloaded file is `.json`.
 """
-function
-    download_collection_values(filepath::AbstractString)
+function download_collection_values(filepath::AbstractString)
     
     ## ID for TCGA Collection
     idTCGA = "5b9ef8e3e62914002e454c39"
@@ -188,7 +187,7 @@ selected collection at startup.
 - The `parentType` attribute is set to `folder` given the structure of
   the repository.
 - The `parentId` is set by defining the identifier of the chosen
-   collection.  The downloaded file is `.json`.
+  collection.  The downloaded file is `.json`.
 """
 function getCasesForProject(filepath_case::AbstractString, project_id::AbstractString)
     ## Download case file as JSON file from the server

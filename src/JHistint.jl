@@ -151,13 +151,17 @@ end
 Function for downloading histological slides in SOPYHSM_app associated
 with a collection available in TCGA.
 
+
 # Arguments
+
 - `collection_name::AbstractString` = Collection of TCGA data to
   download the histological slides.
 - `path_to_save::AbstractString` = Local folder path for saving
   histological slides.
 
+
 # Notes
+
 The function evaluates the `collection_name` argument, and in case of
 an invalid collection, considers the configuration in the
 `Config.toml` file. The value set in the package is `default`.
@@ -224,15 +228,14 @@ function download_single_collection(collection_name::AbstractString,
                 download_zip(link_slides, filepath_slides)
                 filepath_svs = extract_slide(filepath_slides)
                 insert_record_DB_SOPHYSM(collection_name,
-                                            j, i, y, x,
-                                            link_slides,
-                                            filepath_slides,
-                                            filepath_svs,
-                                            path_to_save)
+                                         j, i, y, x,
+                                         link_slides,
+                                         filepath_slides,
+                                         filepath_svs,
+                                         path_to_save)
                 println("DOWNLOAD Slide complete: CASE NAME = $j - SLIDE ID = $y")
             end
         end
-
     else
         return "error"
     end

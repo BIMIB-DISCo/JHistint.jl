@@ -141,16 +141,16 @@ Below are the APIs used in the project:
   download is based on the identifier of the folder.
   
 
-## Package Installation
+## Package Installation from GitHub Repositories
 
-Step 1 - Install `J-Space` from `development` branch:
+Step 1: install `J-Space` from `development` branch:
 ```julia
 (@v1.11) pkg > add https://github.com/BIMIB-DISCo/J-Space.jl.git#development
 ```
 
-Step 2 - Install `JHistint` from GitHub Repository:
+Step 2: install `JHistint` from GitHub Repository:
 ```julia
-(@v1.11) pkg > add https://github.com/niccolo99mandelli/JHistint.jl.git
+(@v1.11) pkg > add https://github.com/BIMIB-DISCo/JHistint.jl.git
 ```
 
 Finally use `JHistint`
@@ -159,7 +159,7 @@ julia > using JHistint
 ```
 
 
-## Package Installation via Julia Registries (In Progress)
+## Package Installation via Julia Registries (in Progress)
 
 The `JHistint` package is available in the Julia Registries and can be
 installed as follows:
@@ -197,7 +197,7 @@ Add `J-Space` package from the `BIMIB-DISCo` GitHub repository. Type
 Add `JHistint` package from the `BIMIB-DISCo` GitHub repository. Type
 `]` in Julia REPL and execute:
 ```julia
-(@v1.11) pkg > add https://github.com/niccolo99mandelli/JHistint.jl.git
+(@v1.11) pkg > add https://github.com/BIMIB-DISCo/JHistint.jl.git
 ```
 Note: a dependency error may be caused by unregistered package (cf.,
 `J-Space`).  This requires adding it to the Julia Registries to
@@ -211,9 +211,10 @@ command-line type:
 ```shell
 julia -e  'cd("/home/nmandelli/.julia/packages/J_Space/______/"); using Pkg; Pkg.activate("."); using J_Space;'
 ```
-Note : `______` refers to the code given to the installed package
-(J_Space), replace it with the code you can find in the indicated
-path. Make sure the path refers to the location of your package.
+Note : `______` refers to the identifier given to the installed
+package (J_Space), replace it with the identifier you can find in the
+indicated path. Make sure the path refers to the location of your
+package.
 
 
 ### Activate `JHistint`
