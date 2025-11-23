@@ -165,33 +165,42 @@ with a collection available in TCGA.
 The function evaluates the `collection_name` argument, and in case of
 an invalid collection, considers the configuration in the
 `Config.toml` file. The value set in the package is `default`.
+
+## Examples with valid input
+
 ```julia
-# Examples with valid input
-julia> JHistint.download_single_collection("acc", "C:\\...")
-julia> JHistint.download_single_collection("bLca", "C:\\...")
+julia> JHistint.download_single_collection("acc", "path/to/collections/")
+julia> JHistint.download_single_collection("bLca", "path/to/collections/")
 ```
+
+## Examples with invalid input
+
 ```julia
-# Examples with invalid input
-julia> JHistint.download_single_collection("ac", "C:\\...")
-julia> JHistint.download_single_collection("", "C:\\...")
+julia> JHistint.download_single_collection("ac", "path/to/collections/")
+julia> JHistint.download_single_collection("", "path/to/collections/")
 ```
 """
 function download_single_collection(collection_name::AbstractString,
                                     path_to_save::AbstractString)
     DirectoryManager.set_environment()
-    ## Check the value of the parameter
+    
+    ## Check the value of the parameter.
+    
     filepath_collection_list =
         joinpath(DirectoryManager.CONFIG_DIR,
                  "collections",
                  "collectionlist.json")
     download_collection_values(filepath_collection_list)
 
-    ## List with all possible collection values
+    ## List with all possible collection values.
+    
     collection_list = extract_collection_values(filepath_collection_list)
     collection_name = lowercase(collection_name)
 
     if collection_name in collection_list
+        
         ## Project Management (TCGA-OR-A5J1, TCGA-OR-A5J2, etc.)
+        
         filepath_collection =
             joinpath(DirectoryManager.CONFIG_DIR,
                      "collections",
@@ -206,12 +215,17 @@ function download_single_collection(collection_name::AbstractString,
             getCasesForProject(filepath_case, project_id)
 
         ## Slides Management
+        
         if isdir(joinpath(path_to_save, "$collection_name"))
             println("Update data ...")
         else
             mkdir(joinpath(path_to_save, "$collection_name"))
         end
+        
         for (i, j) in zip(casesID_values, casesNAME_values)
+
+            @info "JHistint: downloading zipfile for ($(i), $(j))."
+            
             single_casesID_values, single_casesNAME_values =
                 getCasesForProject(filepath_case, i)
             for (x, y) in zip(single_casesID_values, single_casesNAME_values)
@@ -237,7 +251,7 @@ function download_single_collection(collection_name::AbstractString,
             end
         end
     else
-        return "error"
+        error("collection $(collection_name) is unknown.")
     end
 end
 
@@ -282,11 +296,13 @@ function download_all_collection(path_to_save::AbstractString)
             getCasesForProject(filepath_case, project_id)
 
         ## Slides Management
+        
         if isdir(joinpath(path_to_save, "$collection_name"))
             println("Update data ...")
         else
             mkdir(joinpath(path_to_save, "$collection_name"))
         end
+        
         for (i, j) in zip(casesID_values, casesNAME_values)
             single_casesID_values, single_casesNAME_values =
                 getCasesForProject(filepath_case, i)
