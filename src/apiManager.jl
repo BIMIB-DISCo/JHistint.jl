@@ -14,6 +14,23 @@ export getCasesForProject
 
 
 """
+    http_get_internal(url::AbstractString)
+
+Issue a `HTTP.get` on `url`.
+
+Throws and error if the call is unsuccesful.
+"""
+function http_get_internal(url::AbstractString)
+    response = HTTP.get(url)
+    if response.status == 200
+        return response
+    else
+        error("HTTP.get returned status code $(response.status)")
+    end
+end
+
+
+"""
     download_collection_values(filepath::AbstractString)
 
 Function for downloading data from collections available in TCGA.
@@ -40,14 +57,10 @@ function download_collection_values(filepath::AbstractString)
     
     ## Download collection file as JSON file from the server
     url = "https://api.digitalslidearchive.org/api/v1/folder?parentType=collection&parentId=$idTCGA&limit=0&sort=lowerName&sortdir=1"
-    response = HTTP.get(url)
-    
-    if response.status == 200
-        open(filepath, "w") do file
-            write(file, response.body)
-        end
-    else
-        println("Error: HTTP request returned status code $(response.status)")
+
+    response = http_get_internal(url)
+    open(filepath, "w") do file
+        write(file, response.body)
     end
 end
 
@@ -116,13 +129,10 @@ function download_project_infos(filepath::AbstractString, collection_name::Abstr
     ## Download project file as JSON file from the server.
     
     url = "https://api.digitalslidearchive.org/api/v1/folder?parentType=collection&parentId=5b9ef8e3e62914002e454c39&name=$collection_name&sort=lowerName&sortdir=1"
-    response = HTTP.get(url)
-    if response.status == 200
-        open(filepath, "w") do file
-            write(file, response.body)
-        end
-    else
-        println("Error: HTTP request returned status code $(response.status)")
+    
+    response = http_get_internal(url)
+    open(filepath, "w") do file
+        write(file, response.body)
     end
 end
 
@@ -189,16 +199,16 @@ selected collection at startup.
 - The `parentId` is set by defining the identifier of the chosen
   collection.  The downloaded file is `.json`.
 """
-function getCasesForProject(filepath_case::AbstractString, project_id::AbstractString)
+function getCasesForProject(filepath_case::AbstractString,
+                            project_id::AbstractString)
+    
     ## Download case file as JSON file from the server
+    
     url = "https://api.digitalslidearchive.org/api/v1/folder?parentType=folder&parentId=$project_id&limit=0&sort=lowerName&sortdir=1"
-    response = HTTP.get(url)
-    if response.status == 200
-        open(filepath_case, "w") do file
-            write(file, response.body)
-        end
-    else
-        println("Error: HTTP request returned status code $(response.status)")
+    
+    response = http_get_internal(url)
+    open(filepath_case, "w") do file
+        write(file, response.body)
     end
 
     ## Read the case file and insert into a list the data of the cases
@@ -234,7 +244,8 @@ associated with the cases of the selected collection at startup.
 - `link::AbstractString` = URL to access the API for slide download.
 - `filepath::AbstractString` = Path to save the `.zip` file.
 """
-function download_zip(link::AbstractString, filepath::AbstractString)
+function download_zip(link::AbstractString,
+                      filepath::AbstractString)
     try
         HTTP.open(:GET, link) do http
             open(filepath, "w") do file
